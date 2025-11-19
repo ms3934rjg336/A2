@@ -3,15 +3,275 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Site</title>
+    <title>Hallet's Point Community Planning Tool</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Header styles */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 30px 60px;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .logo-container {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .logo-container img {
+            height: 100px;
+        }
+
+        .header-button {
+            font-family: 'Myriad Pro', Arial, sans-serif;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #31c5f4;
+            background: white;
+            border: 4px solid #31c5f4;
+            padding: 15px 35px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            box-shadow: 0 4px 0 #31c5f4, 0 6px 10px rgba(49, 197, 244, 0.3);
+        }
+
+        .header-button:hover {
+            background: #31c5f4;
+            color: white;
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #31c5f4, 0 4px 8px rgba(49, 197, 244, 0.4);
+        }
+
+        .header-button:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #31c5f4, 0 2px 5px rgba(49, 197, 244, 0.4);
+        }
+
+        /* Main content area */
+        main {
+            padding-top: 0;
+            min-height: 100vh;
+            background: white;
+        }
+
+        /* Video section */
+        .video-section {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            margin-top: 160px;
+            background: black;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Menu boxes */
+        .menu-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 60px;
+            min-height: 100vh;
+            padding: 80px 50px;
+            background: white;
+        }
+
+        .menu-box {
+            width: 500px;
+            height: 450px;
+            border: 5px solid #31c5f4;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Myriad Pro', Arial, sans-serif;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #31c5f4;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            padding: 50px;
+            gap: 20px;
+            border-radius: 12px;
+        }
+
+        .menu-box-icon {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 10px;
+            object-fit: contain;
+        }
+
+        .menu-box-label {
+            font-size: 1.5rem;
+            font-weight: normal;
+            margin-bottom: 5px;
+            color: #999;
+        }
+
+        .menu-box:hover {
+            background: #31c5f4;
+            color: white;
+            transform: scale(1.05);
+            border-color: #31c5f4;
+        }
+
+        .menu-box:hover .menu-box-label {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 1600px) {
+            .menu-container {
+                gap: 50px;
+            }
+            .menu-box {
+                width: 400px;
+                height: 380px;
+                font-size: 2rem;
+            }
+            .menu-box-icon {
+                width: 100px;
+                height: 100px;
+            }
+            .menu-box-label {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 20px 30px;
+            }
+            .logo-container img {
+                height: 60px;
+            }
+            .header-button {
+                font-size: 0.9rem;
+                padding: 10px 20px;
+            }
+            .video-section {
+                margin-top: 120px;
+            }
+            .menu-container {
+                flex-direction: column;
+                gap: 30px;
+                align-items: center;
+                padding: 60px 30px;
+            }
+            .menu-box {
+                width: 300px;
+                height: 250px;
+                font-size: 1.4rem;
+                gap: 15px;
+            }
+            .menu-box-icon {
+                width: 80px;
+                height: 80px;
+            }
+            .menu-box-label {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-container img {
+                height: 50px;
+            }
+            .header-button {
+                font-size: 0.8rem;
+                padding: 8px 15px;
+            }
+            .menu-box {
+                width: 260px;
+                height: 220px;
+                font-size: 1.2rem;
+                gap: 10px;
+            }
+            .menu-box-icon {
+                width: 60px;
+                height: 60px;
+            }
+            .menu-box-label {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div id="landing" class="background-image"></div>
-    <div id="slideshow1" class="background-image"></div>
-    <div id="slideshow2" class="background-image"></div>
-    <div id="slideshow3" class="background-image"></div>
-    <div id="overlay" class="background-image"></div>
+    <!-- Header -->
+    <header>
+        <button class="header-button" id="mission-button">Our Mission</button>
+        <div class="logo-container">
+            <img src="HPCP Logo.png" alt="HPCP Logo">
+        </div>
+        <button class="header-button" id="member-button">Become a Member</button>
+    </header>
+
+    <!-- Main content -->
+    <main>
+        <!-- Full screen video section -->
+        <section class="video-section">
+            <div class="video-container">
+                <video id="home-video" autoplay muted loop playsinline>
+                    <source id="video-source" src="" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </section>
+
+        <!-- Menu boxes below video -->
+        <div class="menu-container">
+            <div class="menu-box" id="menu-developers">
+                <img src="icons/developer.png" alt="Developer" class="menu-box-icon">
+                <div class="menu-box-label">You are a...</div>
+                <div>Developer</div>
+            </div>
+            <div class="menu-box" id="menu-community">
+                <img src="icons/communitymember.png" alt="Community Member" class="menu-box-icon">
+                <div class="menu-box-label">You are a...</div>
+                <div>Community Member</div>
+            </div>
+            <div class="menu-box" id="menu-board">
+                <img src="icons/boardmember.png" alt="Board Member" class="menu-box-icon">
+                <div class="menu-box-label">You are a...</div>
+                <div>Board Member</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Original walking path animation (hidden by default) -->
+    <div id="landing" class="background-image" style="display: none;"></div>
+    <div id="slideshow1" class="background-image" style="display: none;"></div>
+    <div id="slideshow2" class="background-image" style="display: none;"></div>
+    <div id="slideshow3" class="background-image" style="display: none;"></div>
+    <div id="overlay" class="background-image" style="display: none;"></div>
 
     <!-- Clickable Points positioned to match yellow dots on 22.png -->
     <div class="clickable-point" id="point1" style="left: 51.503596%; top: 4.894534%;">
@@ -65,6 +325,41 @@
             <source src="Videos/IMG_8152.mp4" type="video/mp4">
         </video>
     </div>
+
+    <script>
+        // Randomly select which home video to display
+        const videos = ['homevideos/homevideo_01.mp4', 'homevideos/homevideo_02.mp4'];
+        const randomVideo = videos[Math.floor(Math.random() * videos.length)];
+        document.getElementById('video-source').src = randomVideo;
+        document.getElementById('home-video').load();
+
+        // Add click handlers for header buttons
+        document.getElementById('mission-button').addEventListener('click', function() {
+            // TODO: Add Our Mission functionality
+            alert('Our Mission page coming soon!');
+        });
+
+        document.getElementById('member-button').addEventListener('click', function() {
+            // TODO: Add Become a Member functionality
+            alert('Become a Member page coming soon!');
+        });
+
+        // Add click handlers for menu boxes
+        document.getElementById('menu-developers').addEventListener('click', function() {
+            // TODO: Add developers functionality
+            alert('Developer portal coming soon!');
+        });
+
+        document.getElementById('menu-community').addEventListener('click', function() {
+            // TODO: Add community members functionality
+            alert('Community Member portal coming soon!');
+        });
+
+        document.getElementById('menu-board').addEventListener('click', function() {
+            // TODO: Add board members functionality
+            alert('Board Member portal coming soon!');
+        });
+    </script>
 
     <script src="script.js"></script>
 </body>

@@ -5,8 +5,10 @@
 }
 
 body {
-    height: 100vh;
-    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .background-image {
@@ -23,7 +25,8 @@ body {
 #landing {
     background-image: url('site-walk-path/images/00.jpg');
     z-index: 1;
-    animation: fadeOut 2s ease-in-out 3s forwards;
+    opacity: 0;
+    /* Animation will be triggered by JavaScript */
 }
 
 @keyframes fadeOut {
@@ -31,29 +34,55 @@ body {
     to { opacity: 0; }
 }
 
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
 #slideshow1 {
     z-index: 2;
     opacity: 0;
-    animation: slideshow1AnimStart 2.5s ease-in-out 2.5s forwards, slideshow1Anim 6.3s steps(1) 5s forwards;
+    /* Animation will be triggered by JavaScript */
 }
 
 #slideshow2 {
     z-index: 2;
     opacity: 0;
-    animation: slideshow2Anim 6.3s steps(1) 5s forwards;
+    /* Animation will be triggered by JavaScript */
 }
 
 #slideshow3 {
     z-index: 2;
     opacity: 0;
-    animation: slideshow3Anim 6.3s steps(1) 5s forwards;
+    /* Animation will be triggered by JavaScript */
 }
 
 #overlay {
     z-index: 3;
     opacity: 0;
     background-size: cover;
-    animation: blinkOverlay 0.5s ease-in-out 11.3s infinite;
+    /* Animation will be triggered by JavaScript */
+}
+
+/* Animation classes to be added by JavaScript */
+#landing.active {
+    /* Removed fade animation that went with yellow Astoria text */
+}
+
+#slideshow1.active {
+    animation: slideshow1AnimStart 2.5s ease-in-out forwards, slideshow1Anim 6.3s steps(1) 2.5s forwards;
+}
+
+#slideshow2.active {
+    animation: slideshow2Anim 6.3s steps(1) 2.5s forwards;
+}
+
+#slideshow3.active {
+    animation: slideshow3Anim 6.3s steps(1) 2.5s forwards;
+}
+
+#overlay.active {
+    animation: blinkOverlay 0.5s ease-in-out 8.8s infinite;
 }
 
 .clickable-point {
