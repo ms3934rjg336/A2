@@ -146,6 +146,211 @@
             color: rgba(255, 255, 255, 0.8);
         }
 
+        /* Aerial image page */
+        #aerial-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('aerial-imagery/site-aerial.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 1;
+            display: none;
+            z-index: 999;
+        }
+
+        #aerial-page.active {
+            display: block;
+        }
+
+        #aerial-text {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Myriad Pro', Arial, sans-serif;
+            font-size: 5rem;
+            font-weight: bold;
+            color: yellow;
+            text-align: center;
+            display: none;
+            z-index: 1001;
+            white-space: nowrap;
+            -webkit-text-stroke: 3px red;
+            text-stroke: 3px red;
+            paint-order: stroke fill;
+        }
+
+        #aerial-text.active {
+            display: block;
+        }
+
+        main.hidden {
+            display: none;
+        }
+
+        header.hidden {
+            display: none;
+        }
+
+        #aerial-logo {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 1001;
+            display: none;
+        }
+
+        #aerial-logo.active {
+            display: block;
+        }
+
+        #aerial-logo img {
+            height: 80px;
+        }
+
+        /* Cursor animation container */
+        .cursor-animation-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 300px;
+            height: 225px;
+            background-color: white;
+            border: 3px solid #333;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 1002;
+            display: none;
+        }
+
+        .cursor-animation-container.active {
+            display: block;
+        }
+
+        .yellow-dot-demo {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background-color: #FFD700;
+            border-radius: 50%;
+            border: 2px solid #333;
+            top: 75px;
+            left: 94px;
+            transition: transform 0.3s ease;
+            animation: dotPulse 4s infinite;
+        }
+
+        @keyframes dotPulse {
+            0%, 42% {
+                transform: scale(1);
+            }
+            48%, 62% {
+                transform: scale(1.4);
+            }
+            70%, 100% {
+                transform: scale(1);
+            }
+        }
+
+        .cursor-demo {
+            position: absolute;
+            width: 19px;
+            height: 19px;
+            pointer-events: none;
+            animation: cursorMove 4s infinite cubic-bezier(0.4, 0, 0.6, 1);
+            z-index: 10;
+        }
+
+        .cursor-demo svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
+        }
+
+        @keyframes cursorMove {
+            0% {
+                top: 142px;
+                right: 30px;
+            }
+            35% {
+                top: 105px;
+                right: 94px;
+            }
+            45% {
+                top: 79px;
+                right: 154px;
+            }
+            65% {
+                top: 79px;
+                right: 154px;
+            }
+            75% {
+                top: 105px;
+                right: 94px;
+            }
+            100% {
+                top: 142px;
+                right: 30px;
+            }
+        }
+
+        .cursor-demo::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, transparent 70%);
+            transform: scale(0.5);
+            animation: pulse 0.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.5);
+            }
+        }
+
+        .demo-info {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            font-family: Arial, sans-serif;
+            color: #666;
+            font-size: 10px;
+        }
+
+        @media (max-width: 1600px) {
+            #aerial-text {
+                font-size: 4rem;
+            }
+            .cursor-animation-container {
+                width: 250px;
+                height: 187px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #aerial-text {
+                font-size: 2.5rem;
+                white-space: normal;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #aerial-text {
+                font-size: 2rem;
+            }
+        }
+
         /* Mobile responsive */
         @media (max-width: 1600px) {
             .menu-container {
@@ -225,6 +430,33 @@
     </style>
 </head>
 <body>
+    <!-- Aerial image page -->
+    <div id="aerial-page"></div>
+    <div id="aerial-text">Sketch, comment, suggest, ideate...</div>
+    <div id="aerial-logo">
+        <img src="HPCP Logo.png" alt="HPCP Logo">
+    </div>
+
+    <!-- Cursor Animation Demo -->
+    <div class="cursor-animation-container" id="cursor-demo">
+        <div class="yellow-dot-demo"></div>
+        <div class="cursor-demo">
+            <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 50 50 L 50 400 L 180 270 L 270 460 L 340 430 L 250 240 L 430 240 Z"
+                      fill="none"
+                      stroke="#000"
+                      stroke-width="25"
+                      stroke-linejoin="round"
+                      stroke-linecap="round"/>
+                <path d="M 50 50 L 50 400 L 180 270 L 270 460 L 340 430 L 250 240 L 430 240 Z"
+                      fill="white"/>
+                <path d="M 70 90 L 70 350 L 180 260 L 260 420 L 310 400 L 240 240 L 380 240 Z"
+                      fill="#000"/>
+            </svg>
+        </div>
+        <div class="demo-info">Hover over yellow dots!</div>
+    </div>
+
     <!-- Header -->
     <header>
         <button class="header-button" id="mission-button">Our Mission</button>
@@ -351,8 +583,30 @@
         });
 
         document.getElementById('menu-community').addEventListener('click', function() {
-            // TODO: Add community members functionality
-            alert('Community Member portal coming soon!');
+            // Hide menu boxes and header, show walking path and dots
+            document.querySelector('main').classList.add('hidden');
+            document.querySelector('header').classList.add('hidden');
+
+            // Start walking path animation
+            document.getElementById('slideshow1').style.display = 'block';
+            document.getElementById('slideshow2').style.display = 'block';
+            document.getElementById('slideshow3').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+
+            document.getElementById('slideshow1').classList.add('active');
+            document.getElementById('slideshow2').classList.add('active');
+            document.getElementById('slideshow3').classList.add('active');
+            document.getElementById('overlay').classList.add('active');
+
+            // Show clickable points after overlay animation starts (at 8.8s when blinking starts)
+            setTimeout(() => {
+                document.querySelectorAll('.clickable-point').forEach(point => {
+                    point.style.display = 'block';
+                    point.classList.add('animation-active');
+                });
+                // Show cursor animation demo
+                document.getElementById('cursor-demo').classList.add('active');
+            }, 8800);
         });
 
         document.getElementById('menu-board').addEventListener('click', function() {
