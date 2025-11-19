@@ -217,11 +217,10 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            width: 300px;
-            height: 225px;
-            background-color: white;
-            border: 3px solid #333;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 400px;
+            height: 300px;
+            border: 3px solid #000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             z-index: 1002;
             display: none;
         }
@@ -232,13 +231,13 @@
 
         .yellow-dot-demo {
             position: absolute;
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             background-color: #FFD700;
             border-radius: 50%;
-            border: 2px solid #333;
-            top: 75px;
-            left: 94px;
+            border: 3px solid #333;
+            top: 100px;
+            left: 125px;
             transition: transform 0.3s ease;
             animation: dotPulse 4s infinite;
         }
@@ -257,8 +256,8 @@
 
         .cursor-demo {
             position: absolute;
-            width: 19px;
-            height: 19px;
+            width: 25px;
+            height: 25px;
             pointer-events: none;
             animation: cursorMove 4s infinite cubic-bezier(0.4, 0, 0.6, 1);
             z-index: 10;
@@ -267,33 +266,33 @@
         .cursor-demo svg {
             width: 100%;
             height: 100%;
-            filter: drop-shadow(1px 1px 2px rgba(0,0,0,0.3));
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
         }
 
         @keyframes cursorMove {
             0% {
-                top: 142px;
-                right: 30px;
+                top: 189px;
+                right: 40px;
             }
             35% {
-                top: 105px;
-                right: 94px;
+                top: 140px;
+                right: 125px;
             }
             45% {
-                top: 79px;
-                right: 154px;
+                top: 105px;
+                right: 205px;
             }
             65% {
-                top: 79px;
-                right: 154px;
+                top: 105px;
+                right: 205px;
             }
             75% {
-                top: 105px;
-                right: 94px;
+                top: 140px;
+                right: 125px;
             }
             100% {
-                top: 142px;
-                right: 30px;
+                top: 189px;
+                right: 40px;
             }
         }
 
@@ -317,15 +316,220 @@
             }
         }
 
-        .demo-info {
-            position: absolute;
-            bottom: 8px;
+        /* Slideshow Page Styles */
+        #slideshow-page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        #slideshow-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #slideshow-images {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            height: 100vh;
+        }
+
+        #slideshow-images img {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        #slideshow-nav {
+            position: fixed;
+            bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px 30px;
+            border-radius: 50px;
+            z-index: 10000;
+        }
+
+        #slideshow-nav button {
+            background: #31c5f4;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #slideshow-nav button:hover {
+            background: #28a3cc;
+            transform: scale(1.1);
+        }
+
+        #slideshow-nav button:active {
+            transform: scale(0.95);
+        }
+
+        #slide-counter {
+            font-family: 'Myriad Pro', Arial, sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            min-width: 80px;
             text-align: center;
-            font-family: Arial, sans-serif;
-            color: #666;
-            font-size: 10px;
+        }
+
+        /* Annotation Toolbar */
+        #annotation-toolbar {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 50px;
+            z-index: 10001;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .tool-button {
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .tool-button:hover {
+            background: #e0e0e0;
+            transform: scale(1.1);
+        }
+
+        .tool-button.active {
+            background: #31c5f4;
+            border-color: #31c5f4;
+            color: white;
+        }
+
+        .tool-options {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding-left: 15px;
+            border-left: 2px solid #ddd;
+        }
+
+        .tool-options.active {
+            display: flex;
+        }
+
+        .color-picker {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: 2px solid #333;
+            cursor: pointer;
+        }
+
+        .thickness-slider {
+            width: 100px;
+        }
+
+        .clear-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .clear-btn:hover {
+            background: #cc0000;
+        }
+
+        /* Canvas overlay for drawings */
+        .canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+        }
+
+        .canvas-overlay.drawing {
+            pointer-events: auto;
+        }
+
+        /* Sticky notes */
+        .sticky-note {
+            position: absolute;
+            width: 200px;
+            min-height: 150px;
+            background: #ffeb3b;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            cursor: move;
+            z-index: 10002;
+            font-family: 'Arial', sans-serif;
+            font-size: 14px;
+        }
+
+        .sticky-note textarea {
+            width: 100%;
+            height: 100px;
+            border: none;
+            background: transparent;
+            resize: none;
+            font-family: inherit;
+            font-size: inherit;
+            outline: none;
+        }
+
+        .sticky-delete {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1;
         }
 
         @media (max-width: 1600px) {
@@ -333,8 +537,8 @@
                 font-size: 4rem;
             }
             .cursor-animation-container {
-                width: 250px;
-                height: 187px;
+                width: 350px;
+                height: 262px;
             }
         }
 
@@ -441,20 +645,44 @@
     <div class="cursor-animation-container" id="cursor-demo">
         <div class="yellow-dot-demo"></div>
         <div class="cursor-demo">
-            <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M 50 50 L 50 400 L 180 270 L 270 460 L 340 430 L 250 240 L 430 240 Z"
-                      fill="none"
-                      stroke="#000"
-                      stroke-width="25"
-                      stroke-linejoin="round"
-                      stroke-linecap="round"/>
-                <path d="M 50 50 L 50 400 L 180 270 L 270 460 L 340 430 L 250 240 L 430 240 Z"
-                      fill="white"/>
-                <path d="M 70 90 L 70 350 L 180 260 L 260 420 L 310 400 L 240 240 L 380 240 Z"
-                      fill="#000"/>
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Solid black cursor matching reference -->
+                <path d="M4 2 L4 20 L9 14 L14 22 L18 20 L12 12 L20 12 Z"
+                      fill="black"/>
             </svg>
         </div>
-        <div class="demo-info">Hover over yellow dots!</div>
+    </div>
+
+    <!-- Slideshow Page for Point 9 -->
+    <div id="slideshow-page" style="display: none;">
+        <button id="close-slideshow" style="position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 25px; font-size: 18px; cursor: pointer; background: white; border: 2px solid #000; border-radius: 8px;">Close</button>
+        <div id="slideshow-container">
+            <div id="slideshow-images"></div>
+            <div id="annotations-container"></div>
+        </div>
+
+        <!-- Annotation Toolbar -->
+        <div id="annotation-toolbar">
+            <button class="tool-button" id="pen-tool" title="Drawing Pen">✏️</button>
+            <div class="tool-options" id="pen-options">
+                <input type="color" id="pen-color" class="color-picker" value="#000000">
+                <input type="range" id="pen-thickness" class="thickness-slider" min="1" max="20" value="3">
+            </div>
+
+            <button class="tool-button" id="eraser-tool" title="Eraser">🧹</button>
+            <div class="tool-options" id="eraser-options">
+                <input type="range" id="eraser-thickness" class="thickness-slider" min="5" max="50" value="20">
+                <button class="clear-btn" id="clear-all">Clear All</button>
+            </div>
+
+            <button class="tool-button" id="sticky-tool" title="Add Sticky Note">📝</button>
+        </div>
+
+        <div id="slideshow-nav">
+            <button id="prev-slide">←</button>
+            <span id="slide-counter">1 / 27</span>
+            <button id="next-slide">→</button>
+        </div>
     </div>
 
     <!-- Header -->
@@ -516,9 +744,17 @@
             <source src="Videos/IMG_8142.mp4" type="video/mp4">
         </video>
     </div>
-    <div class="clickable-point" id="point3" style="left: 61.921444%; top: 15.378307%;"></div>
+    <div class="clickable-point" id="point3" style="left: 61.921444%; top: 15.378307%;">
+        <video muted loop preload="auto">
+            <source src="Videos/IMG_8142.mp4" type="video/mp4">
+        </video>
+    </div>
     <div class="clickable-point" id="point4" style="left: 72.160424%; top: 17.922234%;"></div>
-    <div class="clickable-point" id="point5" style="left: 66.835161%; top: 28.004598%;"></div>
+    <div class="clickable-point" id="point5" style="left: 66.835161%; top: 28.004598%;">
+        <video muted loop preload="auto">
+            <source src="Videos/IMG_8148.mp4" type="video/mp4">
+        </video>
+    </div>
     <div class="clickable-point" id="point6" style="left: 51.361641%; top: 37.181801%;">
         <video muted loop preload="auto">
             <source src="Videos/IMG_8141.mp4" type="video/mp4">
@@ -529,7 +765,11 @@
             <source src="Videos/IMG_8148.mp4" type="video/mp4">
         </video>
     </div>
-    <div class="clickable-point" id="point8" style="left: 22.755235%; top: 45.283878%;"></div>
+    <div class="clickable-point" id="point8" style="left: 22.755235%; top: 45.283878%;">
+        <video muted loop preload="auto">
+            <source src="Videos/IMG_8138.mp4" type="video/mp4">
+        </video>
+    </div>
     <div class="clickable-point" id="point9" style="left: 30.786059%; top: 45.480583%;">
         <video muted loop preload="auto">
             <source src="Videos/IMG_8138.mp4" type="video/mp4">
@@ -545,8 +785,16 @@
             <source src="Videos/IMG_8140.mp4" type="video/mp4">
         </video>
     </div>
-    <div class="clickable-point" id="point12" style="left: 51.406013%; top: 57.324289%;"></div>
-    <div class="clickable-point" id="point13" style="left: 66.717644%; top: 56.887496%;"></div>
+    <div class="clickable-point" id="point12" style="left: 51.406013%; top: 57.324289%;">
+        <video muted loop preload="auto">
+            <source src="Videos/IMG_8141.mp4" type="video/mp4">
+        </video>
+    </div>
+    <div class="clickable-point" id="point13" style="left: 66.717644%; top: 56.887496%;">
+        <video muted loop preload="auto">
+            <source src="Videos/IMG_8148.mp4" type="video/mp4">
+        </video>
+    </div>
     <div class="clickable-point" id="point14" style="left: 23.904598%; top: 69.77731%;">
         <video muted loop preload="auto">
             <source src="Videos/IMG_8153.mp4" type="video/mp4">
@@ -583,22 +831,18 @@
         });
 
         document.getElementById('menu-community').addEventListener('click', function() {
-            // Hide menu boxes and header, show walking path and dots
+            // Hide menu boxes and header
             document.querySelector('main').classList.add('hidden');
             document.querySelector('header').classList.add('hidden');
 
-            // Start walking path animation
-            document.getElementById('slideshow1').style.display = 'block';
-            document.getElementById('slideshow2').style.display = 'block';
+            // Start directly at slideshow3 (images 20, 21, 21.5)
             document.getElementById('slideshow3').style.display = 'block';
             document.getElementById('overlay').style.display = 'block';
 
-            document.getElementById('slideshow1').classList.add('active');
-            document.getElementById('slideshow2').classList.add('active');
             document.getElementById('slideshow3').classList.add('active');
             document.getElementById('overlay').classList.add('active');
 
-            // Show clickable points after overlay animation starts (at 8.8s when blinking starts)
+            // Show clickable points after slideshow3 completes and overlay starts blinking (2s animation + small delay)
             setTimeout(() => {
                 document.querySelectorAll('.clickable-point').forEach(point => {
                     point.style.display = 'block';
@@ -606,7 +850,7 @@
                 });
                 // Show cursor animation demo
                 document.getElementById('cursor-demo').classList.add('active');
-            }, 8800);
+            }, 2500);
         });
 
         document.getElementById('menu-board').addEventListener('click', function() {

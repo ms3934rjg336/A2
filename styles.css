@@ -78,11 +78,11 @@ body {
 }
 
 #slideshow3.active {
-    animation: slideshow3Anim 6.3s steps(1) 2.5s forwards;
+    animation: slideshow3AnimDirect 2s ease-in-out forwards;
 }
 
 #overlay.active {
-    animation: blinkOverlay 0.5s ease-in-out 8.8s infinite;
+    animation: blinkOverlay 0.5s ease-in-out 2s infinite;
 }
 
 .clickable-point {
@@ -140,6 +140,15 @@ body {
 
 #point5.animation-active:hover {
     transform: translate(-180px, -20px);
+}
+
+/* Special positioning for bottom points that would overflow */
+#point14.animation-active:hover {
+    transform: translate(-180px, -740px);
+}
+
+#point15.animation-active:hover {
+    transform: translate(-180px, -740px);
 }
 
 .clickable-point.animation-active:hover video {
@@ -319,6 +328,37 @@ body {
         opacity: 1;
     }
     95.238% {
+        background-image: url('site-walk-path/images/21.5.jpg');
+        opacity: 1;
+    }
+    100% {
+        background-image: url('site-walk-path/images/21.5.jpg');
+        opacity: 1;
+    }
+}
+
+@keyframes slideshow3AnimDirect {
+    0% {
+        background-image: url('site-walk-path/images/20.jpg');
+        opacity: 0;
+    }
+    10% {
+        background-image: url('site-walk-path/images/20.jpg');
+        opacity: 1;
+    }
+    40% {
+        background-image: url('site-walk-path/images/20.jpg');
+        opacity: 1;
+    }
+    50% {
+        background-image: url('site-walk-path/images/21.jpg');
+        opacity: 1;
+    }
+    80% {
+        background-image: url('site-walk-path/images/21.jpg');
+        opacity: 1;
+    }
+    90% {
         background-image: url('site-walk-path/images/21.5.jpg');
         opacity: 1;
     }
