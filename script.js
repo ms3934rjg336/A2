@@ -483,8 +483,18 @@ function makeDraggable(element) {
 function saveAnnotationsForSlide() {
     const container = document.getElementById('slideshow-container');
 
-    // Save canvas drawing
-    const canvasData = drawingCanvas.toDataURL();
+    // Check if canvas has any drawings (not just blank)
+    const imageData = canvasContext.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
+    const hasDrawing = imageData.data.some((channel, index) => {
+        // Check alpha channel (every 4th value starting at index 3)
+        if (index % 4 === 3 && channel !== 0) {
+            return true;
+        }
+        return false;
+    });
+
+    // Save canvas drawing only if it has actual content
+    const canvasData = hasDrawing ? drawingCanvas.toDataURL() : null;
 
     // Save sticky notes
     const stickyNotes = Array.from(container.querySelectorAll('.sticky-note')).map(note => {
@@ -496,10 +506,17 @@ function saveAnnotationsForSlide() {
         };
     });
 
-    annotationsData[currentSlide] = {
-        canvas: canvasData,
-        stickyNotes: stickyNotes
-    };
+    // Only save if there's actual content
+    if (canvasData || stickyNotes.length > 0) {
+        annotationsData[currentSlide] = {
+            canvas: canvasData,
+            stickyNotes: stickyNotes,
+            comment: annotationsData[currentSlide]?.comment || '' // Preserve existing comment
+        };
+    } else {
+        // Remove entry if no annotations
+        delete annotationsData[currentSlide];
+    }
 }
 
 function loadAnnotationsForSlide(slideIndex) {
@@ -568,3 +585,625 @@ function clearAllAnnotations() {
         stickyNotes: []
     };
 }
+
+// ===== SUBMISSION PAGE FUNCTIONALITY =====
+
+function openSubmissionPage() {
+    // Save current slide before opening submission page
+    if (drawingCanvas) {
+        saveAnnotationsForSlide();
+    }
+
+    const submissionPage = document.getElementById('submission-page');
+    const slideshowPage = document.getElementById('slideshow-page');
+
+    // Hide slideshow, show submission
+    slideshowPage.style.display = 'none';
+    submissionPage.style.display = 'block';
+
+    // Generate submission preview
+    generateSubmissionPreview();
+}
+
+function closeSubmissionPage() {
+    const submissionPage = document.getElementById('submission-page');
+    const slideshowPage = document.getElementById('slideshow-page');
+
+    // Hide submission, show slideshow
+    submissionPage.style.display = 'none';
+    slideshowPage.style.display = 'block';
+}
+
+function generateSubmissionPreview() {
+    const grid = document.getElementById('annotated-slides-grid');
+    grid.innerHTML = '';
+
+    // Get all slides that have annotations
+    const annotatedSlides = Object.keys(annotationsData).filter(slideIndex => {
+        const data = annotationsData[slideIndex];
+        return data && (data.canvas || (data.stickyNotes && data.stickyNotes.length > 0));
+    });
+
+    if (annotatedSlides.length === 0) {
+        // Show empty state
+        grid.innerHTML = `
+            <div class="empty-state">
+                <h2>No Annotations Yet</h2>
+                <p>Go back and add drawings or sticky notes to your slides</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Sort slides by index
+    annotatedSlides.sort((a, b) => parseInt(a) - parseInt(b));
+
+    // Create card for each annotated slide
+    annotatedSlides.forEach(slideIndex => {
+        const data = annotationsData[slideIndex];
+        const slideNum = parseInt(slideIndex) + 1;
+        const imageNum = startImageNum + parseInt(slideIndex);
+
+        // Count annotations
+        const hasDrawing = data.canvas !== null && data.canvas !== undefined;
+        const noteCount = data.stickyNotes ? data.stickyNotes.length : 0;
+
+        // Create card
+        const card = document.createElement('div');
+        card.className = 'submission-slide-card';
+        card.innerHTML = `
+            <div style="position: relative;">
+                <img src="images/astoria_Documentation-${imageNum}.jpg" class="submission-slide-image" alt="Slide ${slideNum}">
+                <canvas class="submission-canvas-overlay" width="${window.innerWidth}" height="${window.innerHeight}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+            </div>
+            <div class="submission-slide-info">
+                <div class="submission-slide-title">Slide ${slideNum} of ${totalSlides}</div>
+                <div class="submission-slide-meta">
+                    ${hasDrawing ? '<span class="submission-badge badge-drawing">✏️ Drawings</span>' : ''}
+                    ${noteCount > 0 ? `<span class="submission-badge badge-notes">📝 ${noteCount} Note${noteCount > 1 ? 's' : ''}</span>` : ''}
+                </div>
+                <div class="slide-comment-section">
+                    <div class="slide-comment-label">Comments for Developer:</div>
+                    <textarea class="slide-comment-textarea" data-slide-index="${slideIndex}" placeholder="Add any comments or notes for the developer about this slide...">${data.comment || ''}</textarea>
+                </div>
+            </div>
+        `;
+
+        grid.appendChild(card);
+
+        // Add event listener to save comments
+        const textarea = card.querySelector('.slide-comment-textarea');
+        textarea.addEventListener('input', (e) => {
+            const index = e.target.getAttribute('data-slide-index');
+            if (annotationsData[index]) {
+                annotationsData[index].comment = e.target.value;
+            }
+        });
+
+        // Draw annotations on the preview canvas
+        if (hasDrawing) {
+            const canvas = card.querySelector('.submission-canvas-overlay');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.onload = () => {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            };
+            img.src = data.canvas;
+        }
+    });
+}
+
+function downloadSubmission() {
+    // Save current slide first
+    if (drawingCanvas) {
+        saveAnnotationsForSlide();
+    }
+
+    // Get all annotated slides
+    const annotatedSlides = Object.keys(annotationsData).filter(slideIndex => {
+        const data = annotationsData[slideIndex];
+        return data && (data.canvas || (data.stickyNotes && data.stickyNotes.length > 0));
+    });
+
+    if (annotatedSlides.length === 0) {
+        alert('No annotations to download. Please add some drawings or notes first.');
+        return;
+    }
+
+    // Create a summary of all annotations
+    let summary = 'HALLETTS POINT COMMUNITY SUBMISSION\n';
+    summary += '=' .repeat(50) + '\n\n';
+    summary += `Total Annotated Slides: ${annotatedSlides.length}\n`;
+    summary += `Submission Date: ${new Date().toLocaleString()}\n\n`;
+    summary += '=' .repeat(50) + '\n\n';
+
+    annotatedSlides.sort((a, b) => parseInt(a) - parseInt(b));
+
+    annotatedSlides.forEach(slideIndex => {
+        const data = annotationsData[slideIndex];
+        const slideNum = parseInt(slideIndex) + 1;
+        const imageNum = startImageNum + parseInt(slideIndex);
+
+        summary += `SLIDE ${slideNum} (Image: astoria_Documentation-${imageNum}.jpg)\n`;
+        summary += '-'.repeat(50) + '\n';
+
+        if (data.canvas) {
+            summary += '✏️ Contains drawings\n';
+        }
+
+        if (data.stickyNotes && data.stickyNotes.length > 0) {
+            summary += `📝 ${data.stickyNotes.length} Sticky Note(s):\n`;
+            data.stickyNotes.forEach((note, idx) => {
+                summary += `  ${idx + 1}. ${note.text || '(empty note)'}\n`;
+            });
+        }
+
+        if (data.comment && data.comment.trim()) {
+            summary += `💬 Developer Comment:\n  ${data.comment.trim()}\n`;
+        }
+
+        summary += '\n';
+    });
+
+    // Create download link
+    const blob = new Blob([summary], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `halletts-point-submission-${Date.now()}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    alert(`Submission summary downloaded!\n\n${annotatedSlides.length} annotated slide(s) included.`);
+}
+
+function submitToDeveloper() {
+    // Save current slide first
+    if (drawingCanvas) {
+        saveAnnotationsForSlide();
+    }
+
+    // Get all annotated slides
+    const annotatedSlides = Object.keys(annotationsData).filter(slideIndex => {
+        const data = annotationsData[slideIndex];
+        return data && (data.canvas || (data.stickyNotes && data.stickyNotes.length > 0));
+    });
+
+    if (annotatedSlides.length === 0) {
+        alert('No annotations to submit. Please add some drawings or notes first.');
+        return;
+    }
+
+    // In a real application, this would send data to a server
+    // For now, we'll show a confirmation message
+    const confirmMsg = `You are about to submit ${annotatedSlides.length} annotated slide(s) to the developer.\n\nThis submission includes:\n`;
+
+    let drawingCount = 0;
+    let noteCount = 0;
+    let commentCount = 0;
+
+    annotatedSlides.forEach(slideIndex => {
+        const data = annotationsData[slideIndex];
+        if (data.canvas) drawingCount++;
+        if (data.stickyNotes) noteCount += data.stickyNotes.length;
+        if (data.comment && data.comment.trim()) commentCount++;
+    });
+
+    const fullMsg = confirmMsg + `- ${drawingCount} slide(s) with drawings\n- ${noteCount} sticky note(s)\n- ${commentCount} developer comment(s)\n\nDo you want to proceed?`;
+
+    if (confirm(fullMsg)) {
+        // Save to localStorage for developer portal
+        const submissions = JSON.parse(localStorage.getItem('developerSubmissions') || '[]');
+
+        const newSubmission = {
+            timestamp: Date.now(),
+            date: new Date().toLocaleString(),
+            annotations: JSON.parse(JSON.stringify(annotationsData)) // Deep copy
+        };
+
+        submissions.push(newSubmission);
+        localStorage.setItem('developerSubmissions', JSON.stringify(submissions));
+
+        // Show success message
+        alert('Thank you! Your feedback has been submitted to the developer.\n\nThe Halletts Point Community Planning team will review your suggestions.');
+
+        // Optionally, download a copy for the user
+        downloadSubmission();
+    }
+}
+
+// ===== DEVELOPER PORTAL FUNCTIONALITY =====
+
+// Developer credentials
+const DEVELOPER_CREDENTIALS = {
+    username: 'rjg336@cornell.edu',
+    password: 'password'
+};
+
+function openDeveloperPortal() {
+    // Show login modal
+    const loginModal = document.getElementById('login-modal');
+    loginModal.classList.add('active');
+
+    // Clear previous inputs
+    document.getElementById('login-username').value = '';
+    document.getElementById('login-password').value = '';
+    document.getElementById('login-error').classList.remove('active');
+
+    // Focus on username field
+    setTimeout(() => {
+        document.getElementById('login-username').focus();
+    }, 100);
+}
+
+function authenticateAndOpenPortal() {
+    const username = document.getElementById('login-username').value.trim();
+    const password = document.getElementById('login-password').value;
+    const errorDiv = document.getElementById('login-error');
+
+    // Validate credentials
+    if (username === DEVELOPER_CREDENTIALS.username && password === DEVELOPER_CREDENTIALS.password) {
+        // Hide login modal
+        const loginModal = document.getElementById('login-modal');
+        loginModal.classList.remove('active');
+
+        // Show developer portal
+        const developerPage = document.getElementById('developer-page');
+        const main = document.querySelector('main');
+        const header = document.querySelector('header');
+
+        main.style.display = 'none';
+        header.style.display = 'none';
+        developerPage.style.display = 'block';
+
+        // Load submissions
+        loadDeveloperSubmissions();
+    } else {
+        // Show error message
+        errorDiv.classList.add('active');
+
+        // Shake animation for error
+        const loginBox = document.querySelector('.login-box');
+        loginBox.style.animation = 'shake 0.5s';
+        setTimeout(() => {
+            loginBox.style.animation = '';
+        }, 500);
+    }
+}
+
+function cancelLogin() {
+    const loginModal = document.getElementById('login-modal');
+    loginModal.classList.remove('active');
+    document.getElementById('login-error').classList.remove('active');
+}
+
+function closeDeveloperPortal() {
+    const developerPage = document.getElementById('developer-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    // Show main content
+    main.style.display = 'block';
+    header.style.display = 'block';
+    developerPage.style.display = 'none';
+}
+
+function loadDeveloperSubmissions() {
+    const submissions = JSON.parse(localStorage.getItem('developerSubmissions') || '[]');
+    const submissionsList = document.getElementById('submissions-list');
+
+    // Calculate stats
+    let totalSlides = 0;
+    let totalComments = 0;
+
+    submissions.forEach(submission => {
+        const slideCount = Object.keys(submission.annotations).length;
+        totalSlides += slideCount;
+
+        Object.values(submission.annotations).forEach(data => {
+            if (data.comment && data.comment.trim()) {
+                totalComments++;
+            }
+        });
+    });
+
+    // Update stats
+    document.getElementById('total-submissions').textContent = submissions.length;
+    document.getElementById('total-slides').textContent = totalSlides;
+    document.getElementById('total-comments').textContent = totalComments;
+
+    // Clear existing content
+    submissionsList.innerHTML = '';
+
+    if (submissions.length === 0) {
+        submissionsList.innerHTML = `
+            <div class="empty-state">
+                <h2>No Submissions Yet</h2>
+                <p>Community submissions will appear here</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Display submissions (newest first)
+    submissions.reverse().forEach((submission, index) => {
+        const submissionItem = document.createElement('div');
+        submissionItem.className = 'submission-item';
+
+        const annotatedSlides = Object.keys(submission.annotations);
+
+        submissionItem.innerHTML = `
+            <div class="submission-item-header">
+                <div class="submission-date">Submission ${submissions.length - index} - ${submission.date}</div>
+                <div class="submission-count">${annotatedSlides.length} annotated slides</div>
+            </div>
+            <div class="submission-slides" id="submission-${submission.timestamp}"></div>
+        `;
+
+        submissionsList.appendChild(submissionItem);
+
+        // Add slides to this submission
+        const slidesContainer = document.getElementById(`submission-${submission.timestamp}`);
+
+        annotatedSlides.sort((a, b) => parseInt(a) - parseInt(b)).forEach(slideIndex => {
+            const data = submission.annotations[slideIndex];
+            const slideNum = parseInt(slideIndex) + 1;
+            const imageNum = startImageNum + parseInt(slideIndex);
+
+            const slideCard = document.createElement('div');
+            slideCard.className = 'submission-slide-card';
+
+            const hasDrawing = data.canvas !== null && data.canvas !== undefined;
+            const noteCount = data.stickyNotes ? data.stickyNotes.length : 0;
+
+            // Get bidding data
+            const slideKey = `${submission.timestamp}_${slideIndex}`;
+            const allBids = data.bids || [];
+            const lowestBid = allBids.length > 0 ? Math.min(...allBids.map(b => b.amount)) : null;
+
+            slideCard.innerHTML = `
+                <div style="position: relative;">
+                    <img src="images/astoria_Documentation-${imageNum}.jpg" class="submission-slide-image" alt="Slide ${slideNum}">
+                    <canvas class="submission-canvas-overlay" width="${window.innerWidth}" height="${window.innerHeight}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+                </div>
+                <div class="submission-slide-info">
+                    <div class="submission-slide-title">Slide ${slideNum}</div>
+                    <div class="submission-slide-meta">
+                        ${hasDrawing ? '<span class="submission-badge badge-drawing">✏️ Drawings</span>' : ''}
+                        ${noteCount > 0 ? `<span class="submission-badge badge-notes">📝 ${noteCount} Note${noteCount > 1 ? 's' : ''}</span>` : ''}
+                    </div>
+                    ${data.comment && data.comment.trim() ? `
+                        <div class="slide-comment-section">
+                            <div class="slide-comment-label">Developer Comment:</div>
+                            <div style="padding: 10px; background: #f9f9f9; border-radius: 6px; font-size: 0.9rem; color: #333;">${data.comment}</div>
+                        </div>
+                    ` : ''}
+                    ${noteCount > 0 ? `
+                        <div class="slide-comment-section">
+                            <div class="slide-comment-label">Sticky Notes:</div>
+                            <ul style="margin: 10px 0; padding-left: 20px; font-size: 0.9rem;">
+                                ${data.stickyNotes.map(note => `<li>${note.text || '(empty)'}</li>`).join('')}
+                            </ul>
+                        </div>
+                    ` : ''}
+                    <div class="developer-actions">
+                        <div class="bidding-section">
+                            <div class="bid-input-wrapper">
+                                <input type="number" class="bid-input" placeholder="Enter bid amount" min="0" step="100" data-slide-key="${slideKey}">
+                            </div>
+                            <button class="bid-btn" data-slide-key="${slideKey}">Place Bid</button>
+                        </div>
+                        <div class="bid-status-container" data-slide-key="${slideKey}"></div>
+                    </div>
+                    ${allBids.length > 0 ? `
+                        <div class="all-bids-section">
+                            <div class="all-bids-label">All Bids (${allBids.length})</div>
+                            <div class="bid-list">
+                                ${allBids.sort((a, b) => a.amount - b.amount).map(bid => `
+                                    <div class="bid-item ${bid.amount === lowestBid ? 'lowest' : ''}">
+                                        <span>Developer ${bid.developerId}</span>
+                                        <span class="bid-item-amount">$${bid.amount.toLocaleString()}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            slidesContainer.appendChild(slideCard);
+
+            // Add event listener to bid button
+            const bidBtn = slideCard.querySelector('.bid-btn');
+            const bidInput = slideCard.querySelector('.bid-input');
+
+            bidBtn.addEventListener('click', () => {
+                const amount = parseFloat(bidInput.value);
+                if (!amount || amount <= 0) {
+                    alert('Please enter a valid bid amount');
+                    return;
+                }
+                handleBidSubmission(submission.timestamp, slideIndex, amount, slideCard);
+            });
+
+            // Draw annotations on canvas
+            if (hasDrawing) {
+                const canvas = slideCard.querySelector('.submission-canvas-overlay');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                img.onload = () => {
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                };
+                img.src = data.canvas;
+            }
+        });
+    });
+}
+
+// Handle bid submission
+function handleBidSubmission(timestamp, slideIndex, amount, slideCard) {
+    // Get submissions from localStorage
+    const submissions = JSON.parse(localStorage.getItem('developerSubmissions') || '[]');
+
+    // Find the submission
+    const submissionIdx = submissions.findIndex(s => s.timestamp === timestamp);
+    if (submissionIdx === -1) return;
+
+    // Get or initialize bids array
+    if (!submissions[submissionIdx].annotations[slideIndex]) return;
+    if (!submissions[submissionIdx].annotations[slideIndex].bids) {
+        submissions[submissionIdx].annotations[slideIndex].bids = [];
+    }
+
+    // Generate a developer ID (in real app, this would be from logged-in user)
+    const developerId = `DEV${Math.floor(Math.random() * 9000) + 1000}`;
+
+    // Add the bid
+    const newBid = {
+        developerId: developerId,
+        amount: amount,
+        timestamp: Date.now()
+    };
+
+    submissions[submissionIdx].annotations[slideIndex].bids.push(newBid);
+
+    // Save back to localStorage
+    localStorage.setItem('developerSubmissions', JSON.stringify(submissions));
+
+    // Reload the submissions to update UI
+    loadDeveloperSubmissions();
+
+    // Show success message
+    const allBids = submissions[submissionIdx].annotations[slideIndex].bids;
+    const lowestBid = Math.min(...allBids.map(b => b.amount));
+
+    if (amount === lowestBid) {
+        alert(`Bid placed successfully!\n\nYour bid of $${amount.toLocaleString()} is currently the LOWEST BID. You are winning this project!`);
+    } else {
+        alert(`Bid placed successfully!\n\nYour bid: $${amount.toLocaleString()}\nLowest bid: $${lowestBid.toLocaleString()}\n\nYou need to bid lower to win this project.`);
+    }
+}
+
+// ===== BACK TO MENU FUNCTIONALITY =====
+
+function showBackToMenuButton() {
+    document.getElementById('back-to-menu').classList.add('active');
+}
+
+function hideBackToMenuButton() {
+    document.getElementById('back-to-menu').classList.remove('active');
+}
+
+function goBackToMenu() {
+    // Hide aerial map elements
+    document.getElementById('slideshow3').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+    document.querySelectorAll('.clickable-point').forEach(point => {
+        point.style.display = 'none';
+        point.classList.remove('animation-active');
+    });
+    document.getElementById('cursor-demo').classList.remove('active');
+
+    // Show main menu
+    document.querySelector('main').classList.remove('hidden');
+    document.querySelector('header').classList.remove('hidden');
+
+    // Hide back button
+    hideBackToMenuButton();
+}
+
+// Event listeners for submission page
+document.getElementById('view-submission').addEventListener('click', openSubmissionPage);
+document.getElementById('back-to-slideshow').addEventListener('click', closeSubmissionPage);
+document.getElementById('download-submission').addEventListener('click', downloadSubmission);
+document.getElementById('submit-to-developer').addEventListener('click', submitToDeveloper);
+
+// Event listeners for developer portal
+document.getElementById('close-developer').addEventListener('click', closeDeveloperPortal);
+
+// Event listener for back to menu button
+document.getElementById('back-to-menu').addEventListener('click', goBackToMenu);
+
+// Event listeners for login modal
+document.getElementById('login-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    authenticateAndOpenPortal();
+});
+
+document.getElementById('login-cancel').addEventListener('click', cancelLogin);
+
+// Close login modal when clicking outside
+document.getElementById('login-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'login-modal') {
+        cancelLogin();
+    }
+});
+
+// ===== FORM PAGES FUNCTIONALITY =====
+
+function openMissionPage() {
+    const missionPage = document.getElementById('mission-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    // Hide main content using CSS classes
+    main.classList.add('page-hidden');
+    header.classList.add('page-hidden');
+    missionPage.classList.add('active');
+}
+
+function closeMissionPage() {
+    const missionPage = document.getElementById('mission-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    // Show main content using CSS classes
+    main.classList.remove('page-hidden');
+    header.classList.remove('page-hidden');
+    missionPage.classList.remove('active');
+}
+
+function openMemberPage() {
+    const memberPage = document.getElementById('member-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    // Hide main content using CSS classes
+    main.classList.add('page-hidden');
+    header.classList.add('page-hidden');
+    memberPage.classList.add('active');
+}
+
+function closeMemberPage() {
+    const memberPage = document.getElementById('member-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    // Show main content using CSS classes
+    main.classList.remove('page-hidden');
+    header.classList.remove('page-hidden');
+    memberPage.classList.remove('active');
+}
+
+// Event listeners for form pages
+document.getElementById('close-mission').addEventListener('click', closeMissionPage);
+document.getElementById('close-member').addEventListener('click', closeMemberPage);
+
+// Handle membership form submission
+document.getElementById('membership-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.target);
+    const data = Object.fromEntries(formData.entries());
+
+    // In a real application, this would send data to a server
+    console.log('Membership application submitted:', data);
+
+    alert('Thank you for your membership application!\n\nYour application has been received and will be reviewed by our team. We\'ll contact you at ' + data.email + ' within 3-5 business days.');
+
+    // Reset form and close page
+    e.target.reset();
+    closeMemberPage();
+});
