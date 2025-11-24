@@ -759,7 +759,7 @@ function downloadSubmission() {
     alert(`Submission summary downloaded!\n\n${annotatedSlides.length} annotated slide(s) included.`);
 }
 
-function submitToDeveloper() {
+function submitToCommunity() {
     // Save current slide first
     if (drawingCanvas) {
         saveAnnotationsForSlide();
@@ -776,315 +776,286 @@ function submitToDeveloper() {
         return;
     }
 
-    // In a real application, this would send data to a server
-    // For now, we'll show a confirmation message
-    const confirmMsg = `You are about to submit ${annotatedSlides.length} annotated slide(s) to the developer.\n\nThis submission includes:\n`;
+    // Get proposal details
+    const title = document.getElementById('proposal-title').value.trim();
+    const budget = parseInt(document.getElementById('proposal-budget').value);
+    const description = document.getElementById('proposal-description').value.trim();
 
-    let drawingCount = 0;
-    let noteCount = 0;
-    let commentCount = 0;
+    // Validate required fields
+    if (!title) {
+        alert('Please enter a proposal title.');
+        document.getElementById('proposal-title').focus();
+        return;
+    }
 
-    annotatedSlides.forEach(slideIndex => {
-        const data = annotationsData[slideIndex];
-        if (data.canvas) drawingCount++;
-        if (data.stickyNotes) noteCount += data.stickyNotes.length;
-        if (data.comment && data.comment.trim()) commentCount++;
-    });
+    if (!budget || budget <= 0) {
+        alert('Please enter a valid budget amount.');
+        document.getElementById('proposal-budget').focus();
+        return;
+    }
 
-    const fullMsg = confirmMsg + `- ${drawingCount} slide(s) with drawings\n- ${noteCount} sticky note(s)\n- ${commentCount} developer comment(s)\n\nDo you want to proceed?`;
+    if (!description) {
+        alert('Please enter a description for your proposal.');
+        document.getElementById('proposal-description').focus();
+        return;
+    }
 
-    if (confirm(fullMsg)) {
-        // Save to localStorage for developer portal
-        const submissions = JSON.parse(localStorage.getItem('developerSubmissions') || '[]');
+    // Get reference photos
+    const photoInput = document.getElementById('reference-photos');
+    const referencePhotos = [];
+    if (photoInput.files.length > 0) {
+        // In a real app, we'd upload these to a server
+        // For now, we'll just store the file names
+        for (let i = 0; i < Math.min(photoInput.files.length, 5); i++) {
+            referencePhotos.push(photoInput.files[i].name);
+        }
+    }
 
-        const newSubmission = {
+    const confirmMsg = `Submit your proposal to the community?\n\nTitle: ${title}\nBudget: $${budget.toLocaleString()}\nAnnotated Slides: ${annotatedSlides.length}\n\nYour proposal will be visible to all community members who can vote and contribute!`;
+
+    if (confirm(confirmMsg)) {
+        // Save to localStorage as community proposal
+        const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
+
+        const newProposal = {
+            id: Date.now(),
             timestamp: Date.now(),
             date: new Date().toLocaleString(),
-            annotations: JSON.parse(JSON.stringify(annotationsData)) // Deep copy
+            title: title,
+            budget: budget,
+            description: description,
+            annotations: JSON.parse(JSON.stringify(annotationsData)), // Deep copy
+            referencePhotos: referencePhotos,
+            votes: {
+                build: 0,
+                demolish: 0
+            },
+            funding: {
+                raised: 0,
+                backers: 0
+            }
         };
 
-        submissions.push(newSubmission);
-        localStorage.setItem('developerSubmissions', JSON.stringify(submissions));
+        proposals.push(newProposal);
+        localStorage.setItem('communityProposals', JSON.stringify(proposals));
 
         // Show success message
-        alert('Thank you! Your feedback has been submitted to the developer.\n\nThe Halletts Point Community Planning team will review your suggestions.');
+        alert('Success! Your proposal has been submitted to the community.\n\nCommunity members can now view, vote, and contribute to your project!');
 
-        // Optionally, download a copy for the user
-        downloadSubmission();
-    }
-}
+        // Clear form and go back to home
+        document.getElementById('proposal-title').value = '';
+        document.getElementById('proposal-budget').value = '';
+        document.getElementById('proposal-description').value = '';
+        document.getElementById('reference-photos').value = '';
+        document.getElementById('photo-preview').innerHTML = '';
 
-// ===== DEVELOPER PORTAL FUNCTIONALITY =====
+        closeSubmissionPage();
+        closeSlideshow();
 
-// Developer credentials
-const DEVELOPER_CREDENTIALS = {
-    username: 'rjg336@cornell.edu',
-    password: 'password'
-};
+        // Go back to homepage properly
+        document.getElementById('slideshow3').style.display = 'none';
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('slideshow3').classList.remove('active');
+        document.getElementById('overlay').classList.remove('active');
 
-function openDeveloperPortal() {
-    // Show login modal
-    const loginModal = document.getElementById('login-modal');
-    loginModal.classList.add('active');
-
-    // Clear previous inputs
-    document.getElementById('login-username').value = '';
-    document.getElementById('login-password').value = '';
-    document.getElementById('login-error').classList.remove('active');
-
-    // Focus on username field
-    setTimeout(() => {
-        document.getElementById('login-username').focus();
-    }, 100);
-}
-
-function authenticateAndOpenPortal() {
-    const username = document.getElementById('login-username').value.trim();
-    const password = document.getElementById('login-password').value;
-    const errorDiv = document.getElementById('login-error');
-
-    // Validate credentials
-    if (username === DEVELOPER_CREDENTIALS.username && password === DEVELOPER_CREDENTIALS.password) {
-        // Hide login modal
-        const loginModal = document.getElementById('login-modal');
-        loginModal.classList.remove('active');
-
-        // Show developer portal
-        const developerPage = document.getElementById('developer-page');
-        const main = document.querySelector('main');
-        const header = document.querySelector('header');
-
-        main.style.display = 'none';
-        header.style.display = 'none';
-        developerPage.style.display = 'block';
-
-        // Load submissions
-        loadDeveloperSubmissions();
-    } else {
-        // Show error message
-        errorDiv.classList.add('active');
-
-        // Shake animation for error
-        const loginBox = document.querySelector('.login-box');
-        loginBox.style.animation = 'shake 0.5s';
-        setTimeout(() => {
-            loginBox.style.animation = '';
-        }, 500);
-    }
-}
-
-function cancelLogin() {
-    const loginModal = document.getElementById('login-modal');
-    loginModal.classList.remove('active');
-    document.getElementById('login-error').classList.remove('active');
-}
-
-function closeDeveloperPortal() {
-    const developerPage = document.getElementById('developer-page');
-    const main = document.querySelector('main');
-    const header = document.querySelector('header');
-
-    // Show main content
-    main.style.display = 'block';
-    header.style.display = 'block';
-    developerPage.style.display = 'none';
-}
-
-function loadDeveloperSubmissions() {
-    const submissions = JSON.parse(localStorage.getItem('developerSubmissions') || '[]');
-    const submissionsList = document.getElementById('submissions-list');
-
-    // Calculate stats
-    let totalSlides = 0;
-    let totalComments = 0;
-
-    submissions.forEach(submission => {
-        const slideCount = Object.keys(submission.annotations).length;
-        totalSlides += slideCount;
-
-        Object.values(submission.annotations).forEach(data => {
-            if (data.comment && data.comment.trim()) {
-                totalComments++;
-            }
+        document.querySelectorAll('.clickable-point').forEach(point => {
+            point.style.display = 'none';
+            point.classList.remove('animation-active');
         });
-    });
+        document.getElementById('cursor-demo').classList.remove('active');
 
-    // Update stats
-    document.getElementById('total-submissions').textContent = submissions.length;
-    document.getElementById('total-slides').textContent = totalSlides;
-    document.getElementById('total-comments').textContent = totalComments;
+        document.querySelector('main').classList.remove('hidden');
+        document.querySelector('header').classList.remove('hidden');
+        hideBackToMenuButton();
 
-    // Clear existing content
-    submissionsList.innerHTML = '';
+        // Reload proposals on landing page
+        loadProposals();
 
-    if (submissions.length === 0) {
-        submissionsList.innerHTML = `
-            <div class="empty-state">
-                <h2>No Submissions Yet</h2>
-                <p>Community submissions will appear here</p>
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+// ===== COMMUNITY PROPOSALS FUNCTIONALITY =====
+
+// Load and display proposals on landing page
+function loadProposals() {
+    const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
+    const proposalsList = document.getElementById('proposals-list');
+
+    if (!proposalsList) return;
+
+    if (proposals.length === 0) {
+        proposalsList.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #666; font-family: Verdana, Arial, sans-serif;">
+                <p style="font-size: 1.1rem; margin-bottom: 10px;">No proposals yet!</p>
+                <p style="font-size: 0.9rem;">Be the first to submit a community proposal.</p>
             </div>
         `;
         return;
     }
 
-    // Display submissions (newest first)
-    submissions.reverse().forEach((submission, index) => {
-        const submissionItem = document.createElement('div');
-        submissionItem.className = 'submission-item';
+    // Sort by net votes (Build - Demolish) and show top 3
+    const topProposals = proposals.sort((a, b) => {
+        const aNetVotes = a.votes.build - a.votes.demolish;
+        const bNetVotes = b.votes.build - b.votes.demolish;
+        return bNetVotes - aNetVotes;
+    }).slice(0, 3);
 
-        const annotatedSlides = Object.keys(submission.annotations);
+    proposalsList.innerHTML = topProposals.map(proposal => createProposalCard(proposal)).join('');
 
-        submissionItem.innerHTML = `
-            <div class="submission-item-header">
-                <div class="submission-date">Submission ${submissions.length - index} - ${submission.date}</div>
-                <div class="submission-count">${annotatedSlides.length} annotated slides</div>
+    // Add event listeners for voting and funding
+    attachProposalEventListeners();
+}
+
+// Create HTML for a proposal card
+function createProposalCard(proposal) {
+    const fundingPercent = Math.min((proposal.funding.raised / proposal.budget) * 100, 100);
+    const netVotes = proposal.votes.build - proposal.votes.demolish;
+
+    return `
+        <div class="proposal-card" data-proposal-id="${proposal.id}">
+            <div class="proposal-header">
+                <div>
+                    <h3 class="proposal-title">${proposal.title}</h3>
+                    <div class="proposal-meta">Submitted ${proposal.date} • ${Object.keys(proposal.annotations).length} annotated slides</div>
+                </div>
+                <div class="proposal-budget">
+                    <div class="budget-label">Project Budget</div>
+                    <div class="budget-amount">$${proposal.budget.toLocaleString()}</div>
+                </div>
             </div>
-            <div class="submission-slides" id="submission-${submission.timestamp}"></div>
-        `;
 
-        submissionsList.appendChild(submissionItem);
+            <div class="proposal-description">${proposal.description}</div>
 
-        // Add slides to this submission
-        const slidesContainer = document.getElementById(`submission-${submission.timestamp}`);
-
-        annotatedSlides.sort((a, b) => parseInt(a) - parseInt(b)).forEach(slideIndex => {
-            const data = submission.annotations[slideIndex];
-            const slideNum = parseInt(slideIndex) + 1;
-            const imageNum = startImageNum + parseInt(slideIndex);
-
-            const slideCard = document.createElement('div');
-            slideCard.className = 'submission-slide-card';
-
-            const hasDrawing = data.canvas !== null && data.canvas !== undefined;
-            const noteCount = data.stickyNotes ? data.stickyNotes.length : 0;
-
-            // Get bidding data
-            const slideKey = `${submission.timestamp}_${slideIndex}`;
-            const allBids = data.bids || [];
-            const lowestBid = allBids.length > 0 ? Math.min(...allBids.map(b => b.amount)) : null;
-
-            slideCard.innerHTML = `
-                <div style="position: relative;">
-                    <img src="images/astoria_Documentation-${imageNum}.jpg" class="submission-slide-image" alt="Slide ${slideNum}">
-                    <canvas class="submission-canvas-overlay" width="${window.innerWidth}" height="${window.innerHeight}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+            <div class="funding-section">
+                <strong style="font-size: 0.9rem; color: #333;">Community Funding</strong>
+                <div class="funding-progress-bar">
+                    <div class="funding-progress-fill" style="width: ${fundingPercent}%"></div>
                 </div>
-                <div class="submission-slide-info">
-                    <div class="submission-slide-title">Slide ${slideNum}</div>
-                    <div class="submission-slide-meta">
-                        ${hasDrawing ? '<span class="submission-badge badge-drawing">✏️ Drawings</span>' : ''}
-                        ${noteCount > 0 ? `<span class="submission-badge badge-notes">📝 ${noteCount} Note${noteCount > 1 ? 's' : ''}</span>` : ''}
-                    </div>
-                    ${data.comment && data.comment.trim() ? `
-                        <div class="slide-comment-section">
-                            <div class="slide-comment-label">Developer Comment:</div>
-                            <div style="padding: 10px; background: #f9f9f9; border-radius: 6px; font-size: 0.9rem; color: #333;">${data.comment}</div>
-                        </div>
-                    ` : ''}
-                    ${noteCount > 0 ? `
-                        <div class="slide-comment-section">
-                            <div class="slide-comment-label">Sticky Notes:</div>
-                            <ul style="margin: 10px 0; padding-left: 20px; font-size: 0.9rem;">
-                                ${data.stickyNotes.map(note => `<li>${note.text || '(empty)'}</li>`).join('')}
-                            </ul>
-                        </div>
-                    ` : ''}
-                    <div class="developer-actions">
-                        <div class="bidding-section">
-                            <div class="bid-input-wrapper">
-                                <input type="number" class="bid-input" placeholder="Enter bid amount" min="0" step="100" data-slide-key="${slideKey}">
-                            </div>
-                            <button class="bid-btn" data-slide-key="${slideKey}">Place Bid</button>
-                        </div>
-                        <div class="bid-status-container" data-slide-key="${slideKey}"></div>
-                    </div>
-                    ${allBids.length > 0 ? `
-                        <div class="all-bids-section">
-                            <div class="all-bids-label">All Bids (${allBids.length})</div>
-                            <div class="bid-list">
-                                ${allBids.sort((a, b) => a.amount - b.amount).map(bid => `
-                                    <div class="bid-item ${bid.amount === lowestBid ? 'lowest' : ''}">
-                                        <span>Developer ${bid.developerId}</span>
-                                        <span class="bid-item-amount">$${bid.amount.toLocaleString()}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
+                <div class="funding-stats">
+                    <span class="funding-raised">$${proposal.funding.raised.toLocaleString()} raised of $${proposal.budget.toLocaleString()}</span>
+                    <span class="funding-backers">${proposal.funding.backers} ${proposal.funding.backers === 1 ? 'backer' : 'backers'}</span>
                 </div>
-            `;
+                <button class="contribute-btn" data-proposal-id="${proposal.id}">💰 Contribute to this Project</button>
+            </div>
 
-            slidesContainer.appendChild(slideCard);
+            <div class="voting-section">
+                <div class="vote-group">
+                    <button class="vote-btn vote-build" data-proposal-id="${proposal.id}" data-vote-type="build">
+                        👍 BUILD
+                    </button>
+                    <span class="vote-count">${proposal.votes.build}</span>
+                    <span class="vote-label">Votes</span>
+                </div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: ${netVotes >= 0 ? '#66BB66' : '#CC3333'}; padding: 0 15px;">
+                    ${netVotes >= 0 ? '+' : ''}${netVotes}
+                </div>
+                <div class="vote-group">
+                    <button class="vote-btn vote-demolish" data-proposal-id="${proposal.id}" data-vote-type="demolish">
+                        👎 DEMOLISH
+                    </button>
+                    <span class="vote-count">${proposal.votes.demolish}</span>
+                    <span class="vote-label">Votes</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
 
-            // Add event listener to bid button
-            const bidBtn = slideCard.querySelector('.bid-btn');
-            const bidInput = slideCard.querySelector('.bid-input');
+// Attach event listeners to proposal cards
+function attachProposalEventListeners() {
+    // Vote buttons
+    document.querySelectorAll('.vote-btn').forEach(btn => {
+        btn.addEventListener('click', handleVote);
+    });
 
-            bidBtn.addEventListener('click', () => {
-                const amount = parseFloat(bidInput.value);
-                if (!amount || amount <= 0) {
-                    alert('Please enter a valid bid amount');
-                    return;
-                }
-                handleBidSubmission(submission.timestamp, slideIndex, amount, slideCard);
-            });
-
-            // Draw annotations on canvas
-            if (hasDrawing) {
-                const canvas = slideCard.querySelector('.submission-canvas-overlay');
-                const ctx = canvas.getContext('2d');
-                const img = new Image();
-                img.onload = () => {
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                };
-                img.src = data.canvas;
-            }
-        });
+    // Contribute buttons
+    document.querySelectorAll('.contribute-btn').forEach(btn => {
+        btn.addEventListener('click', handleContribution);
     });
 }
 
-// Handle bid submission
-function handleBidSubmission(timestamp, slideIndex, amount, slideCard) {
-    // Get submissions from localStorage
-    const submissions = JSON.parse(localStorage.getItem('developerSubmissions') || '[]');
-
-    // Find the submission
-    const submissionIdx = submissions.findIndex(s => s.timestamp === timestamp);
-    if (submissionIdx === -1) return;
-
-    // Get or initialize bids array
-    if (!submissions[submissionIdx].annotations[slideIndex]) return;
-    if (!submissions[submissionIdx].annotations[slideIndex].bids) {
-        submissions[submissionIdx].annotations[slideIndex].bids = [];
+// Handle voting
+function handleVote(e) {
+    // Check if user is signed in
+    if (!checkSignIn()) {
+        showSignInModal();
+        return;
     }
 
-    // Generate a developer ID (in real app, this would be from logged-in user)
-    const developerId = `DEV${Math.floor(Math.random() * 9000) + 1000}`;
+    const proposalId = parseInt(e.currentTarget.getAttribute('data-proposal-id'));
+    const voteType = e.currentTarget.getAttribute('data-vote-type');
 
-    // Add the bid
-    const newBid = {
-        developerId: developerId,
-        amount: amount,
-        timestamp: Date.now()
-    };
+    const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
+    const proposalIndex = proposals.findIndex(p => p.id === proposalId);
 
-    submissions[submissionIdx].annotations[slideIndex].bids.push(newBid);
+    if (proposalIndex === -1) return;
+
+    // Increment vote
+    proposals[proposalIndex].votes[voteType]++;
 
     // Save back to localStorage
-    localStorage.setItem('developerSubmissions', JSON.stringify(submissions));
+    localStorage.setItem('communityProposals', JSON.stringify(proposals));
 
-    // Reload the submissions to update UI
-    loadDeveloperSubmissions();
+    // Reload proposals
+    loadProposals();
+    // Also reload if on browse page
+    const browsePage = document.getElementById('browse-proposals-page');
+    if (browsePage && browsePage.classList.contains('active')) {
+        loadAllProposals();
+    }
+
+    // Show feedback
+    const voteLabel = voteType === 'build' ? 'BUILD 👍' : 'DEMOLISH 👎';
+    alert(`Your vote for "${voteLabel}" has been recorded!\n\nProposal: ${proposals[proposalIndex].title}`);
+}
+
+// Handle contributions
+function handleContribution(e) {
+    const proposalId = parseInt(e.currentTarget.getAttribute('data-proposal-id'));
+
+    const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
+    const proposalIndex = proposals.findIndex(p => p.id === proposalId);
+
+    if (proposalIndex === -1) return;
+
+    const proposal = proposals[proposalIndex];
+    const remaining = proposal.budget - proposal.funding.raised;
+
+    // Prompt for contribution amount
+    const amountStr = prompt(`Contribute to: ${proposal.title}\n\nBudget: $${proposal.budget.toLocaleString()}\nRaised: $${proposal.funding.raised.toLocaleString()}\nRemaining: $${remaining.toLocaleString()}\n\nHow much would you like to contribute?`, '100');
+
+    if (amountStr === null) return; // User cancelled
+
+    const amount = parseInt(amountStr);
+
+    if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid contribution amount.');
+        return;
+    }
+
+    // Add contribution
+    proposals[proposalIndex].funding.raised += amount;
+    proposals[proposalIndex].funding.backers++;
+
+    // Save back to localStorage
+    localStorage.setItem('communityProposals', JSON.stringify(proposals));
+
+    // Reload proposals
+    loadProposals();
 
     // Show success message
-    const allBids = submissions[submissionIdx].annotations[slideIndex].bids;
-    const lowestBid = Math.min(...allBids.map(b => b.amount));
+    const newTotal = proposals[proposalIndex].funding.raised;
+    const percentFunded = Math.min((newTotal / proposal.budget) * 100, 100).toFixed(1);
 
-    if (amount === lowestBid) {
-        alert(`Bid placed successfully!\n\nYour bid of $${amount.toLocaleString()} is currently the LOWEST BID. You are winning this project!`);
-    } else {
-        alert(`Bid placed successfully!\n\nYour bid: $${amount.toLocaleString()}\nLowest bid: $${lowestBid.toLocaleString()}\n\nYou need to bid lower to win this project.`);
-    }
+    alert(`Thank you for your contribution of $${amount.toLocaleString()}!\n\nProject: ${proposal.title}\nTotal Raised: $${newTotal.toLocaleString()} (${percentFunded}% funded)`);
 }
+
+// Load proposals when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    loadProposals();
+});
 
 // ===== BACK TO MENU FUNCTIONALITY =====
 
@@ -1118,28 +1089,10 @@ function goBackToMenu() {
 document.getElementById('view-submission').addEventListener('click', openSubmissionPage);
 document.getElementById('back-to-slideshow').addEventListener('click', closeSubmissionPage);
 document.getElementById('download-submission').addEventListener('click', downloadSubmission);
-document.getElementById('submit-to-developer').addEventListener('click', submitToDeveloper);
-
-// Event listeners for developer portal
-document.getElementById('close-developer').addEventListener('click', closeDeveloperPortal);
+document.getElementById('submit-to-community').addEventListener('click', submitToCommunity);
 
 // Event listener for back to menu button
 document.getElementById('back-to-menu').addEventListener('click', goBackToMenu);
-
-// Event listeners for login modal
-document.getElementById('login-form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    authenticateAndOpenPortal();
-});
-
-document.getElementById('login-cancel').addEventListener('click', cancelLogin);
-
-// Close login modal when clicking outside
-document.getElementById('login-modal').addEventListener('click', (e) => {
-    if (e.target.id === 'login-modal') {
-        cancelLogin();
-    }
-});
 
 // ===== FORM PAGES FUNCTIONALITY =====
 
@@ -1187,9 +1140,119 @@ function closeMemberPage() {
     memberPage.classList.remove('active');
 }
 
+// Board Info page functions
+function openBoardPage() {
+    const boardPage = document.getElementById('board-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    main.classList.add('page-hidden');
+    header.classList.add('page-hidden');
+    boardPage.classList.add('active');
+}
+
+function closeBoardPage() {
+    const boardPage = document.getElementById('board-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    main.classList.remove('page-hidden');
+    header.classList.remove('page-hidden');
+    boardPage.classList.remove('active');
+}
+
+// Events page functions
+function openEventsPage() {
+    const eventsPage = document.getElementById('events-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    main.classList.add('page-hidden');
+    header.classList.add('page-hidden');
+    eventsPage.classList.add('active');
+}
+
+function closeEventsPage() {
+    const eventsPage = document.getElementById('events-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    main.classList.remove('page-hidden');
+    header.classList.remove('page-hidden');
+    eventsPage.classList.remove('active');
+}
+
+// Contact page functions
+function openContactPage() {
+    const contactPage = document.getElementById('contact-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    main.classList.add('page-hidden');
+    header.classList.add('page-hidden');
+    contactPage.classList.add('active');
+}
+
+function closeContactPage() {
+    const contactPage = document.getElementById('contact-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    main.classList.remove('page-hidden');
+    header.classList.remove('page-hidden');
+    contactPage.classList.remove('active');
+}
+
+// Meeting Minutes page functions
+function openMeetingsPage() {
+    const meetingsPage = document.getElementById('meetings-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    main.classList.add('page-hidden');
+    header.classList.add('page-hidden');
+    meetingsPage.classList.add('active');
+}
+
+function closeMeetingsPage() {
+    const meetingsPage = document.getElementById('meetings-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    main.classList.remove('page-hidden');
+    header.classList.remove('page-hidden');
+    meetingsPage.classList.remove('active');
+}
+
+// Resources page functions
+function openResourcesPage() {
+    const resourcesPage = document.getElementById('resources-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    main.classList.add('page-hidden');
+    header.classList.add('page-hidden');
+    resourcesPage.classList.add('active');
+}
+
+function closeResourcesPage() {
+    const resourcesPage = document.getElementById('resources-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    main.classList.remove('page-hidden');
+    header.classList.remove('page-hidden');
+    resourcesPage.classList.remove('active');
+}
+
 // Event listeners for form pages
 document.getElementById('close-mission').addEventListener('click', closeMissionPage);
 document.getElementById('close-member').addEventListener('click', closeMemberPage);
+document.getElementById('close-board').addEventListener('click', closeBoardPage);
+document.getElementById('close-events').addEventListener('click', closeEventsPage);
+document.getElementById('close-contact').addEventListener('click', closeContactPage);
+document.getElementById('close-meetings').addEventListener('click', closeMeetingsPage);
+document.getElementById('close-resources').addEventListener('click', closeResourcesPage);
 
 // Handle membership form submission
 document.getElementById('membership-form').addEventListener('submit', (e) => {
@@ -1210,28 +1273,197 @@ document.getElementById('membership-form').addEventListener('submit', (e) => {
 
 // ===== NAVIGATION LINKS FUNCTIONALITY =====
 
-// Developer portal link
-document.getElementById('nav-developers').addEventListener('click', (e) => {
-    e.preventDefault();
-    openDeveloperPortal();
-});
-
 // Community map link
 document.getElementById('nav-community').addEventListener('click', (e) => {
     e.preventDefault();
-    // Existing menu community functionality
+    document.getElementById('menu-community').click();
+});
+
+// All proposals link
+document.getElementById('nav-proposals').addEventListener('click', (e) => {
+    e.preventDefault();
+    // Scroll to proposals section
+    const proposalsSection = document.querySelector('.recent-submissions');
+    if (proposalsSection) {
+        proposalsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+});
+
+// Create proposal link
+document.getElementById('nav-create').addEventListener('click', (e) => {
+    e.preventDefault();
     document.getElementById('menu-community').click();
 });
 
 // Landing page action buttons
-document.getElementById('btn-community-map').addEventListener('click', () => {
+document.getElementById('btn-create-proposal').addEventListener('click', () => {
     document.getElementById('menu-community').click();
 });
 
-document.getElementById('btn-developer-portal').addEventListener('click', () => {
-    openDeveloperPortal();
+document.getElementById('btn-browse-proposals').addEventListener('click', () => {
+    // Scroll to proposals section
+    const proposalsSection = document.querySelector('.recent-submissions');
+    if (proposalsSection) {
+        proposalsSection.scrollIntoView({ behavior: 'smooth' });
+    }
 });
 
-document.getElementById('view-all-submissions').addEventListener('click', () => {
-    openDeveloperPortal();
+document.getElementById('view-all-proposals').addEventListener('click', () => {
+    // Could open a full proposals page in the future
+    // For now, just reload to show all proposals
+    loadProposals();
 });
+
+// Navigation sidebar links
+document.getElementById('nav-home').addEventListener('click', (e) => {
+    e.preventDefault();
+    // Scroll to top of page (home)
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+document.getElementById('nav-board').addEventListener('click', (e) => {
+    e.preventDefault();
+    openBoardPage();
+});
+
+document.getElementById('nav-events').addEventListener('click', (e) => {
+    e.preventDefault();
+    openEventsPage();
+});
+
+document.getElementById('nav-contact').addEventListener('click', (e) => {
+    e.preventDefault();
+    openContactPage();
+});
+
+document.getElementById('nav-meetings').addEventListener('click', (e) => {
+    e.preventDefault();
+    openMeetingsPage();
+});
+
+document.getElementById('nav-resources').addEventListener('click', (e) => {
+    e.preventDefault();
+    openResourcesPage();
+});
+
+// Header button links
+document.getElementById('mission-button').addEventListener('click', () => {
+    openMissionPage();
+});
+
+document.getElementById('member-button').addEventListener('click', () => {
+    openMemberPage();
+});
+
+// ===== SIGN IN FUNCTIONALITY =====
+
+// Track if user is signed in
+let userSignedIn = false;
+
+// Demo credentials
+const DEMO_USER = {
+    username: 'user@halletts.org',
+    password: 'password'
+};
+
+function showSignInModal() {
+    const modal = document.getElementById('signin-modal');
+    modal.classList.add('active');
+    document.getElementById('signin-username').value = '';
+    document.getElementById('signin-password').value = '';
+    document.getElementById('signin-error').classList.remove('active');
+    setTimeout(() => {
+        document.getElementById('signin-username').focus();
+    }, 100);
+}
+
+function hideSignInModal() {
+    const modal = document.getElementById('signin-modal');
+    modal.classList.remove('active');
+    document.getElementById('signin-error').classList.remove('active');
+}
+
+function checkSignIn() {
+    return userSignedIn;
+}
+
+// Sign in form handler
+document.getElementById('signin-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const username = document.getElementById('signin-username').value.trim();
+    const password = document.getElementById('signin-password').value;
+    const errorDiv = document.getElementById('signin-error');
+
+    if (username === DEMO_USER.username && password === DEMO_USER.password) {
+        userSignedIn = true;
+        hideSignInModal();
+        alert('Welcome! You are now signed in.');
+    } else {
+        errorDiv.classList.add('active');
+    }
+});
+
+document.getElementById('signin-cancel').addEventListener('click', hideSignInModal);
+
+// Close modal when clicking outside
+document.getElementById('signin-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'signin-modal') {
+        hideSignInModal();
+    }
+});
+
+// ===== BROWSE ALL PROPOSALS PAGE =====
+
+function openBrowseProposalsPage() {
+    const browsePage = document.getElementById('browse-proposals-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    main.classList.add('page-hidden');
+    header.classList.add('page-hidden');
+    browsePage.classList.add('active');
+
+    // Load all proposals
+    loadAllProposals();
+}
+
+function closeBrowseProposalsPage() {
+    const browsePage = document.getElementById('browse-proposals-page');
+    const main = document.querySelector('main');
+    const header = document.querySelector('header');
+
+    main.classList.remove('page-hidden');
+    header.classList.remove('page-hidden');
+    browsePage.classList.remove('active');
+}
+
+function loadAllProposals() {
+    const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
+    const allProposalsList = document.getElementById('all-proposals-list');
+
+    if (!allProposalsList) return;
+
+    if (proposals.length === 0) {
+        allProposalsList.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #666; font-family: Verdana, Arial, sans-serif;">
+                <p style="font-size: 1.1rem; margin-bottom: 10px;">No proposals yet!</p>
+                <p style="font-size: 0.9rem;">Be the first to submit a community proposal.</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Sort by net votes (Build - Demolish) descending
+    const sortedProposals = proposals.sort((a, b) => {
+        const aNetVotes = a.votes.build - a.votes.demolish;
+        const bNetVotes = b.votes.build - b.votes.demolish;
+        return bNetVotes - aNetVotes;
+    });
+
+    allProposalsList.innerHTML = sortedProposals.map(proposal => createProposalCard(proposal)).join('');
+
+    // Add event listeners for voting and funding
+    attachProposalEventListeners();
+}
+
+document.getElementById('close-browse-proposals').addEventListener('click', closeBrowseProposalsPage);

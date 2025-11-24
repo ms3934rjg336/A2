@@ -58,7 +58,7 @@
 
         /* Main content area */
         main {
-            padding-top: 0;
+            padding-top: 140px;
             min-height: 100vh;
             background: #E8E8E8;
         }
@@ -1785,6 +1785,216 @@
             border: 2px inset #449944;
         }
 
+        /* Proposal Cards */
+        .proposals-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .proposal-card {
+            background: white;
+            border: 3px solid #999;
+            padding: 15px;
+            font-family: Verdana, Arial, sans-serif;
+        }
+
+        .proposal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #CCC;
+        }
+
+        .proposal-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #003366;
+            margin: 0 0 5px 0;
+        }
+
+        .proposal-meta {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .proposal-budget {
+            text-align: right;
+            font-size: 0.9rem;
+        }
+
+        .budget-label {
+            color: #666;
+            font-size: 0.75rem;
+        }
+
+        .budget-amount {
+            font-weight: bold;
+            color: #CC6600;
+            font-size: 1.2rem;
+        }
+
+        .proposal-description {
+            font-size: 0.85rem;
+            color: #333;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .proposal-images {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            overflow-x: auto;
+        }
+
+        .proposal-thumbnail {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border: 2px solid #999;
+            cursor: pointer;
+        }
+
+        .proposal-thumbnail:hover {
+            border-color: #666;
+        }
+
+        /* Funding Progress Bar (GoFundMe style) */
+        .funding-section {
+            background: #F9F9F9;
+            border: 2px solid #DDD;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .funding-progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #E8E8E8;
+            border: 2px inset #999;
+            margin: 8px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .funding-progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, #66BB66, #88DD88);
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .funding-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .funding-raised {
+            font-weight: bold;
+            color: #006600;
+        }
+
+        .funding-backers {
+            color: #666;
+        }
+
+        .contribute-btn {
+            background: #66BB66;
+            color: white;
+            border: 2px outset #449944;
+            padding: 8px 16px;
+            font-family: Verdana, Arial, sans-serif;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .contribute-btn:hover {
+            background: #77CC77;
+        }
+
+        .contribute-btn:active {
+            border: 2px inset #449944;
+        }
+
+        /* Voting Section (Reddit style) */
+        .voting-section {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            padding-top: 12px;
+            border-top: 2px solid #CCC;
+        }
+
+        .vote-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .vote-btn {
+            font-family: Verdana, Arial, sans-serif;
+            font-size: 1.5rem;
+            width: 100px;
+            height: 45px;
+            cursor: pointer;
+            border: 2px outset;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .vote-build {
+            background: #66BB66;
+            color: white;
+            border-color: #449944;
+        }
+
+        .vote-build:hover {
+            background: #77CC77;
+        }
+
+        .vote-build:active {
+            border: 2px inset #449944;
+        }
+
+        .vote-demolish {
+            background: #CC3333;
+            color: white;
+            border-color: #AA2222;
+        }
+
+        .vote-demolish:hover {
+            background: #DD4444;
+        }
+
+        .vote-demolish:active {
+            border: 2px inset #AA2222;
+        }
+
+        .vote-count {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #003366;
+        }
+
+        .vote-label {
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -1926,8 +2136,8 @@
 
     <!-- Slideshow Page for Point 9 -->
     <div id="slideshow-page" style="display: none;">
-        <button id="close-slideshow" style="position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 15px 25px; font-size: 18px; cursor: pointer; background: white; border: 2px solid #000; border-radius: 8px;">Close</button>
-        <button id="view-submission" style="position: fixed; top: 20px; right: 150px; z-index: 10000; padding: 15px 25px; font-size: 18px; cursor: pointer; background: #31c5f4; color: white; border: 2px solid #31c5f4; border-radius: 8px; font-weight: bold;">View Submission</button>
+        <button id="close-slideshow" style="position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 12px 20px; font-size: 16px; cursor: pointer; font-family: Verdana, Arial, sans-serif; font-weight: bold; background: #D3D3D3; border: 2px outset #999; color: #000;">Close</button>
+        <button id="view-submission" style="position: fixed; top: 20px; right: 150px; z-index: 10000; padding: 12px 20px; font-size: 16px; cursor: pointer; font-family: Verdana, Arial, sans-serif; font-weight: bold; background: #66BB66; color: white; border: 2px outset #449944;">Create Proposal →</button>
         <div id="slideshow-container">
             <div id="slideshow-images"></div>
             <div id="annotations-container"></div>
@@ -1960,97 +2170,356 @@
     <!-- Submission Compilation Page -->
     <div id="submission-page" style="display: none;">
         <div class="submission-header">
-            <h1>Your Submission</h1>
-            <p>Review all your annotations and drawings before submitting to the developer</p>
+            <h1>Create Your Proposal</h1>
+            <p>Review annotations, set budget, add reference photos, and submit to the community</p>
             <div class="submission-actions">
                 <button id="back-to-slideshow" class="submission-btn back-btn">← Back to Edit</button>
-                <button id="download-submission" class="submission-btn download-btn">Download Submission</button>
-                <button id="submit-to-developer" class="submission-btn submit-btn">Submit to Developer</button>
+                <button id="download-submission" class="submission-btn download-btn">Download Copy</button>
+                <button id="submit-to-community" class="submission-btn submit-btn">Submit to Community</button>
             </div>
         </div>
         <div id="submission-content">
-            <div id="annotated-slides-grid"></div>
-        </div>
-    </div>
+            <!-- Proposal Details Form -->
+            <div style="background: white; border: 3px solid #999; padding: 20px; margin-bottom: 20px;">
+                <h2 style="font-family: Verdana, Arial, sans-serif; color: #003366; margin: 0 0 15px 0;">Proposal Details</h2>
 
-    <!-- Developer Portal Page -->
-    <div id="developer-page">
-        <button class="developer-close-btn" id="close-developer">Back to Home</button>
-        <div class="developer-header">
-            <h1>Developer Portal</h1>
-            <p>Community feedback and annotations</p>
-            <div class="developer-stats">
-                <div class="stat-box">
-                    <div class="stat-number" id="total-submissions">0</div>
-                    <div class="stat-label">Total Submissions</div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-family: Verdana, Arial, sans-serif; font-weight: bold; color: #333; margin-bottom: 5px;">Proposal Title *</label>
+                    <input type="text" id="proposal-title" placeholder="e.g., New Community Garden at Main Plaza" style="width: 100%; padding: 8px; border: 2px solid #999; font-family: Verdana, Arial, sans-serif; font-size: 0.9rem;">
                 </div>
-                <div class="stat-box">
-                    <div class="stat-number" id="total-slides">0</div>
-                    <div class="stat-label">Annotated Slides</div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-family: Verdana, Arial, sans-serif; font-weight: bold; color: #333; margin-bottom: 5px;">Project Budget *</label>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-family: Verdana, Arial, sans-serif; font-weight: bold; font-size: 1.2rem; color: #333;">$</span>
+                        <input type="number" id="proposal-budget" placeholder="25000" min="0" step="100" style="flex: 1; padding: 8px; border: 2px solid #999; font-family: Verdana, Arial, sans-serif; font-size: 0.9rem;">
+                    </div>
+                    <p style="font-size: 0.75rem; color: #666; margin: 5px 0 0 0;">This becomes your funding goal for community contributions</p>
                 </div>
-                <div class="stat-box">
-                    <div class="stat-number" id="total-comments">0</div>
-                    <div class="stat-label">Comments</div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-family: Verdana, Arial, sans-serif; font-weight: bold; color: #333; margin-bottom: 5px;">Description *</label>
+                    <textarea id="proposal-description" placeholder="Describe your proposal, why it's needed, and how it benefits the community..." style="width: 100%; min-height: 100px; padding: 8px; border: 2px solid #999; font-family: Verdana, Arial, sans-serif; font-size: 0.9rem; resize: vertical;"></textarea>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; font-family: Verdana, Arial, sans-serif; font-weight: bold; color: #333; margin-bottom: 5px;">Reference Photos (Optional)</label>
+                    <input type="file" id="reference-photos" multiple accept="image/*" style="width: 100%; padding: 8px; border: 2px solid #999; font-family: Verdana, Arial, sans-serif; font-size: 0.85rem; background: white;">
+                    <p style="font-size: 0.75rem; color: #666; margin: 5px 0 0 0;">Add inspiration photos, examples, or reference images (Max 5 photos)</p>
+                    <div id="photo-preview" style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;"></div>
                 </div>
             </div>
-        </div>
-        <div id="developer-content">
-            <div class="submissions-list" id="submissions-list"></div>
+
+            <h2 style="font-family: Verdana, Arial, sans-serif; color: #003366; margin: 0 0 15px 0;">Your Annotated Slides</h2>
+            <div id="annotated-slides-grid"></div>
         </div>
     </div>
 
     <!-- Back to Menu Button -->
     <button class="back-to-menu-btn" id="back-to-menu">← Back to Menu</button>
 
+    <!-- Hidden trigger buttons for map functionality -->
+    <button id="menu-community" style="display: none;"></button>
+    <button id="menu-board" style="display: none;"></button>
+
+    <!-- Browse All Proposals Page -->
+    <div class="form-page" id="browse-proposals-page">
+        <div class="form-page-header">
+            <button class="form-page-close" id="close-browse-proposals">Back to Home</button>
+            <h1>Browse All Proposals</h1>
+            <p>Vote and contribute to community projects</p>
+        </div>
+        <div class="form-page-content">
+            <div class="content-section">
+                <div id="all-proposals-list" style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- All proposals will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sign In Modal -->
+    <div class="login-modal" id="signin-modal">
+        <div class="login-box">
+            <div class="login-header">
+                <h2>Sign In Required</h2>
+                <p>Please sign in to vote or contribute to proposals</p>
+            </div>
+            <form class="login-form" id="signin-form">
+                <div class="form-group">
+                    <label class="form-label" for="signin-username">Username (Email)</label>
+                    <input type="email" class="form-input" id="signin-username" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="signin-password">Password</label>
+                    <input type="password" class="form-input" id="signin-password" placeholder="Enter password" required>
+                </div>
+                <div class="login-error" id="signin-error">
+                    Invalid username or password. Please try again.
+                </div>
+                <div class="login-buttons">
+                    <button type="button" class="login-btn login-btn-secondary" id="signin-cancel">Cancel</button>
+                    <button type="submit" class="login-btn login-btn-primary">Sign In</button>
+                </div>
+            </form>
+            <p style="text-align: center; margin-top: 15px; font-size: 0.85rem; color: #666;">
+                Demo credentials: user@halletts.org / password
+            </p>
+        </div>
+    </div>
+
     <!-- Mission Page -->
     <div class="form-page" id="mission-page">
         <div class="form-page-header">
             <button class="form-page-close" id="close-mission">Back to Home</button>
             <h1>Our Mission</h1>
-            <p>Building bridges between developers and community members</p>
+            <p>Empowering residents to shape their neighborhood</p>
         </div>
         <div class="form-page-content">
             <div class="content-section">
-                <h2>Empowering Communication at Halletts Point</h2>
+                <h2>Community-Driven Planning at Halletts Point</h2>
                 <p>
-                    At the Halletts Point Community Planning organization, we believe that effective communication between developers and residents is the cornerstone of thriving communities. Located in the heart of Astoria, Queens, Halletts Point represents a unique opportunity to create a model for urban development that truly serves all stakeholders.
+                    At the Halletts Point Community Planning organization, we believe that the best ideas come from the people who live here. Located in the heart of Astoria, Queens, Halletts Point represents a unique opportunity to create a neighborhood shaped entirely by its residents.
                 </p>
                 <p>
-                    For too long, community members and developers have struggled to find common ground. Residents feel unheard in the planning process, while developers lack clear channels to understand community needs and concerns. This disconnect leads to projects that miss the mark, strained relationships, and missed opportunities for creating spaces that everyone can be proud of.
+                    For too long, community planning has been a top-down process. Residents have been told what their neighborhood needs instead of being asked. We're changing that. Through our platform, every community member can propose projects, vote on ideas, and contribute funding to make their vision a reality.
                 </p>
             </div>
 
             <div class="content-section">
                 <h2>What We Do</h2>
                 <p>
-                    Our platform provides a digital space where developers and community members can collaborate in real-time. Through interactive tools, visual feedback systems, and structured dialogue, we're breaking down barriers and building understanding.
+                    Our platform empowers residents to take control of their neighborhood's future. Through interactive tools, community voting, and grassroots funding, we're putting the power where it belongs—in your hands.
                 </p>
                 <ul>
-                    <li><strong>Visual Annotation Tools:</strong> Community members can directly mark up development plans, adding notes and suggestions exactly where they matter most.</li>
-                    <li><strong>Developer Portal:</strong> Developers receive organized, actionable feedback that helps them understand community priorities and concerns.</li>
-                    <li><strong>Transparent Process:</strong> All feedback is documented and tracked, ensuring accountability and creating a historical record of community input.</li>
-                    <li><strong>Accessibility:</strong> Our platform is designed to be accessible to all community members, regardless of technical expertise.</li>
+                    <li><strong>Visual Annotation Tools:</strong> Mark up site plans with drawings and sticky notes to show exactly what you envision.</li>
+                    <li><strong>Community Voting:</strong> Vote BUILD 👍 or DEMOLISH 👎 on proposals from your neighbors.</li>
+                    <li><strong>Grassroots Funding:</strong> Contribute directly to projects you believe in, like a neighborhood GoFundMe.</li>
+                    <li><strong>Transparent Process:</strong> All proposals are public. See what your neighbors are proposing and add your voice.</li>
                 </ul>
             </div>
 
             <div class="content-section">
                 <h2>Our Vision for Astoria</h2>
                 <p>
-                    We envision a Halletts Point where every resident has a voice in shaping their neighborhood's future. Where developers have the resources and community insights needed to create spaces that genuinely serve local needs. Where planning meetings are productive conversations rather than confrontations.
+                    We envision a Halletts Point where the community decides what gets built. Where a great idea and community support—not corporate interests—determine what happens in our neighborhood. Where every resident, regardless of wealth or connections, can propose and fund improvements they want to see.
                 </p>
                 <p>
-                    By providing better tools for communication, we're not just improving individual projects—we're building a stronger, more connected community. Every annotation, every comment, every conversation brings us closer to a Halletts Point that works for everyone.
+                    By giving residents the tools to organize, vote, and fund their own projects, we're creating a truly democratic approach to urban planning. Every vote, every contribution, every proposal brings us closer to a Halletts Point that reflects the will of the people who call it home.
                 </p>
             </div>
 
             <div class="content-section">
                 <h2>Join Us</h2>
                 <p>
-                    Whether you're a long-time resident, a new community member, or a developer working in the area, your voice matters. Join us in creating a more collaborative, transparent, and effective approach to community planning at Halletts Point.
+                    Whether you're a long-time resident or new to the neighborhood, your voice matters. Join us in building a community where residents—not corporations or distant bureaucrats—shape the future of Halletts Point.
                 </p>
                 <p>
-                    Together, we're not just building buildings—we're building community.
+                    Together, we're not just proposing projects—we're building power.
                 </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Board Info Page -->
+    <div class="form-page" id="board-page">
+        <div class="form-page-header">
+            <button class="form-page-close" id="close-board">Back to Home</button>
+            <h1>Board Information</h1>
+            <p>Meet the Halletts Point Community Planning Board</p>
+        </div>
+        <div class="form-page-content">
+            <div class="content-section">
+                <h2>Board Members</h2>
+                <div style="background: white; border: 3px solid #999; padding: 15px; margin-bottom: 15px;">
+                    <h3 style="color: #003366; margin: 0 0 5px 0;">Maria Rodriguez - Board President</h3>
+                    <p style="font-size: 0.85rem; margin: 0;">15-year Astoria resident, urban planning advocate</p>
+                </div>
+                <div style="background: white; border: 3px solid #999; padding: 15px; margin-bottom: 15px;">
+                    <h3 style="color: #003366; margin: 0 0 5px 0;">David Chen - Vice President</h3>
+                    <p style="font-size: 0.85rem; margin: 0;">Local business owner, community organizer</p>
+                </div>
+                <div style="background: white; border: 3px solid #999; padding: 15px; margin-bottom: 15px;">
+                    <h3 style="color: #003366; margin: 0 0 5px 0;">Sarah Thompson - Secretary</h3>
+                    <p style="font-size: 0.85rem; margin: 0;">Parent, education advocate, 10-year resident</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h2>Meeting Schedule</h2>
+                <p><strong>Regular Board Meetings:</strong> Second Tuesday of every month at 7:00 PM</p>
+                <p><strong>Location:</strong> Astoria Community Center, 35-20 Broadway, Astoria, NY 11106</p>
+                <p><strong>Public Comment:</strong> All community members are welcome to attend and speak during public comment period</p>
+            </div>
+
+            <div class="content-section">
+                <h2>Contact the Board</h2>
+                <p><strong>Email:</strong> board@hallettspoint.org</p>
+                <p><strong>Phone:</strong> (718) 555-0199</p>
+                <p><strong>Mail:</strong> Halletts Point Community Planning, PO Box 1234, Astoria, NY 11102</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Events Page -->
+    <div class="form-page" id="events-page">
+        <div class="form-page-header">
+            <button class="form-page-close" id="close-events">Back to Home</button>
+            <h1>Community Events</h1>
+            <p>Upcoming events at Halletts Point</p>
+        </div>
+        <div class="form-page-content">
+            <div class="content-section">
+                <h2>December 2025 Events</h2>
+                <div style="background: #FFFFCC; border: 3px solid #999; padding: 15px; margin-bottom: 15px;">
+                    <h3 style="color: #CC6600; margin: 0 0 5px 0;">🎄 Dec 12 - Christmas Eve Light Show</h3>
+                    <p style="margin: 5px 0; font-size: 0.9rem;"><strong>Time:</strong> 6:00 PM - 9:00 PM</p>
+                    <p style="margin: 5px 0; font-size: 0.9rem;"><strong>Location:</strong> Main Plaza</p>
+                    <p style="margin: 5px 0; font-size: 0.85rem;">Annual holiday light display with music and hot chocolate</p>
+                </div>
+
+                <div style="background: white; border: 3px solid #999; padding: 15px; margin-bottom: 15px;">
+                    <h3 style="color: #003366; margin: 0 0 5px 0;">🎅 Dec 25 - Christmas Day Parade</h3>
+                    <p style="margin: 5px 0; font-size: 0.9rem;"><strong>Time:</strong> 11:00 AM - 1:00 PM</p>
+                    <p style="margin: 5px 0; font-size: 0.9rem;"><strong>Location:</strong> Starting at Community Center</p>
+                    <p style="margin: 5px 0; font-size: 0.85rem;">Join us for our festive holiday parade through the neighborhood!</p>
+                </div>
+
+                <div style="background: white; border: 3px solid #999; padding: 15px; margin-bottom: 15px;">
+                    <h3 style="color: #003366; margin: 0 0 5px 0;">🐕 Dec 28 - Community Dog Walk</h3>
+                    <p style="margin: 5px 0; font-size: 0.9rem;"><strong>Time:</strong> 10:00 AM - 12:00 PM</p>
+                    <p style="margin: 5px 0; font-size: 0.9rem;"><strong>Location:</strong> Waterfront Park</p>
+                    <p style="margin: 5px 0; font-size: 0.85rem;">Bring your furry friends for a group walk along the waterfront</p>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h2>Ongoing Programs</h2>
+                <p><strong>🏃 Neighborhood 5K:</strong> Every Saturday at 8:00 AM, meet at Main Plaza</p>
+                <p><strong>🥬 Farmers Market:</strong> Every Sunday 10:00 AM - 2:00 PM, Community Center parking lot</p>
+                <p><strong>🎃 Pumpkin Composting:</strong> Drop-off available year-round at Community Garden</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Page -->
+    <div class="form-page" id="contact-page">
+        <div class="form-page-header">
+            <button class="form-page-close" id="close-contact">Back to Home</button>
+            <h1>Contact Us</h1>
+            <p>Get in touch with Halletts Point Community Planning</p>
+        </div>
+        <div class="form-page-content">
+            <div class="content-section">
+                <h2>General Inquiries</h2>
+                <p><strong>Email:</strong> info@hallettspoint.org</p>
+                <p><strong>Phone:</strong> (718) 555-0100</p>
+                <p><strong>Hours:</strong> Monday-Friday, 9:00 AM - 5:00 PM</p>
+            </div>
+
+            <div class="content-section">
+                <h2>Office Location</h2>
+                <p>Halletts Point Community Planning Office<br>
+                35-20 Broadway, Suite 200<br>
+                Astoria, NY 11106</p>
+            </div>
+
+            <div class="content-section">
+                <h2>Follow Us</h2>
+                <p><strong>Forum:</strong> forum.hallettspoint.org</p>
+                <p><strong>Newsletter:</strong> Subscribe at hallettspoint.org/newsletter</p>
+                <p><strong>Community Board:</strong> Check bulletin boards around Halletts Point</p>
+            </div>
+
+            <div class="content-section">
+                <h2>Report an Issue</h2>
+                <p>For urgent community issues (broken streetlights, graffiti, etc.):</p>
+                <p><strong>24/7 Hotline:</strong> (718) 555-0911</p>
+                <p><strong>Online:</strong> Use the "Create Proposal" tool to document and share community concerns</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meeting Minutes Page -->
+    <div class="form-page" id="meetings-page">
+        <div class="form-page-header">
+            <button class="form-page-close" id="close-meetings">Back to Home</button>
+            <h1>Meeting Minutes</h1>
+            <p>Official records of board meetings</p>
+        </div>
+        <div class="form-page-content">
+            <div class="content-section">
+                <h2>2025 Meeting Minutes</h2>
+                <div style="background: white; border: 3px solid #999; padding: 15px; margin-bottom: 15px;">
+                    <h3 style="color: #003366; margin: 0 0 5px 0;">November 2025 - Board Meeting</h3>
+                    <p style="margin: 5px 0; font-size: 0.85rem;"><strong>Date:</strong> November 12, 2025</p>
+                    <p style="margin: 5px 0; font-size: 0.85rem;"><strong>Topics:</strong> Waterfront development proposals, holiday events planning</p>
+                    <button class="ad-button" style="margin-top: 10px;">Download PDF</button>
+                </div>
+
+                <div style="background: white; border: 3px solid #999; padding: 15px; margin-bottom: 15px;">
+                    <h3 style="color: #003366; margin: 0 0 5px 0;">October 2025 - Board Meeting</h3>
+                    <p style="margin: 5px 0; font-size: 0.85rem;"><strong>Date:</strong> October 8, 2025</p>
+                    <p style="margin: 5px 0; font-size: 0.85rem;"><strong>Topics:</strong> Community tool platform launch, budget review</p>
+                    <button class="ad-button" style="margin-top: 10px;">Download PDF</button>
+                </div>
+
+                <div style="background: white; border: 3px solid #999; padding: 15px; margin-bottom: 15px;">
+                    <h3 style="color: #003366; margin: 0 0 5px 0;">September 2025 - Special Session</h3>
+                    <p style="margin: 5px 0; font-size: 0.85rem;"><strong>Date:</strong> September 20, 2025</p>
+                    <p style="margin: 5px 0; font-size: 0.85rem;"><strong>Topics:</strong> Public input on park improvements</p>
+                    <button class="ad-button" style="margin-top: 10px;">Download PDF</button>
+                </div>
+            </div>
+
+            <div class="content-section">
+                <h2>Archive</h2>
+                <p>For meeting minutes from 2024 and earlier, please contact the board office or email records@hallettspoint.org</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resources Page -->
+    <div class="form-page" id="resources-page">
+        <div class="form-page-header">
+            <button class="form-page-close" id="close-resources">Back to Home</button>
+            <h1>Community Resources</h1>
+            <p>Helpful links and information for residents</p>
+        </div>
+        <div class="form-page-content">
+            <div class="content-section">
+                <h2>Planning & Development</h2>
+                <ul style="font-size: 0.9rem; line-height: 1.8;">
+                    <li><strong>NYC Zoning Information:</strong> www1.nyc.gov/site/planning/zoning</li>
+                    <li><strong>Community Board 1:</strong> www.cb1.org</li>
+                    <li><strong>Queens Borough President:</strong> www.queensbp.org</li>
+                    <li><strong>NYC Buildings Department:</strong> www1.nyc.gov/site/buildings</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h2>Local Services</h2>
+                <ul style="font-size: 0.9rem; line-height: 1.8;">
+                    <li><strong>Astoria Public Library:</strong> (718) 278-2220</li>
+                    <li><strong>NYPD 114th Precinct:</strong> (718) 626-9311</li>
+                    <li><strong>Sanitation Department:</strong> 311 or nyc.gov/sanitation</li>
+                    <li><strong>Parks Department:</strong> (718) 520-5936</li>
+                </ul>
+            </div>
+
+            <div class="content-section">
+                <h2>How to Use This Site</h2>
+                <p><strong>1. View Community Proposals:</strong> Scroll down on the home page to see active proposals</p>
+                <p><strong>2. Vote on Projects:</strong> Click BUILD 👍 or DEMOLISH 👎 on any proposal</p>
+                <p><strong>3. Contribute Funding:</strong> Click "Contribute" to help fund community projects</p>
+                <p><strong>4. Create Your Own Proposal:</strong> Click "Create Proposal" or "Community Map" to annotate site plans and submit your ideas</p>
+            </div>
+
+            <div class="content-section">
+                <h2>Download Forms</h2>
+                <p>📄 <a href="#" style="color: #003366; text-decoration: underline;">Membership Application (PDF)</a></p>
+                <p>📄 <a href="#" style="color: #003366; text-decoration: underline;">Vendor Application (PDF)</a></p>
+                <p>📄 <a href="#" style="color: #003366; text-decoration: underline;">Event Space Rental Request (PDF)</a></p>
             </div>
         </div>
     </div>
@@ -2113,33 +2582,6 @@
         </div>
     </div>
 
-    <!-- Login Modal -->
-    <div class="login-modal" id="login-modal">
-        <div class="login-box">
-            <div class="login-header">
-                <h2>Developer Portal</h2>
-                <p>Please enter your credentials to access the developer dashboard</p>
-            </div>
-            <form class="login-form" id="login-form">
-                <div class="form-group">
-                    <label class="form-label" for="login-username">Username (Email)</label>
-                    <input type="email" class="form-input" id="login-username" placeholder="Enter username" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label" for="login-password">Password</label>
-                    <input type="password" class="form-input" id="login-password" placeholder="Enter password" required>
-                </div>
-                <div class="login-error" id="login-error">
-                    Invalid username or password. Please try again.
-                </div>
-                <div class="login-buttons">
-                    <button type="button" class="login-btn login-btn-secondary" id="login-cancel">Cancel</button>
-                    <button type="submit" class="login-btn login-btn-primary">Login</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Header -->
     <header>
         <button class="header-button" id="mission-button">Our Mission</button>
@@ -2158,7 +2600,7 @@
                     <h3>Navigation</h3>
                     <ul class="nav-links">
                         <li><a href="#" id="nav-home" class="active">Home</a></li>
-                        <li><a href="#" id="nav-developers">Developer Portal</a></li>
+                        <li><a href="#" id="nav-proposals">All Proposals</a></li>
                         <li><a href="#" id="nav-community">Community Map</a></li>
                         <li><a href="#" id="nav-board">Board Info</a></li>
                         <li><a href="#" id="nav-events">Events</a></li>
@@ -2169,7 +2611,7 @@
                 <div class="nav-section">
                     <h3>Quick Links</h3>
                     <ul class="nav-links">
-                        <li><a href="#" id="nav-submit">Submit Feedback</a></li>
+                        <li><a href="#" id="nav-create">Create Proposal</a></li>
                         <li><a href="#" id="nav-meetings">Meeting Minutes</a></li>
                         <li><a href="#" id="nav-resources">Resources</a></li>
                     </ul>
@@ -2191,100 +2633,76 @@
                 </div>
 
                 <div class="welcome-box">
-                    <h1>Community Feedback & Developer Collaboration Tool</h1>
-                    <p><strong>Submit Your Ideas</strong> • Annotate Plans • Connect with Developers</p>
+                    <h1>Community-Driven Planning Tool</h1>
+                    <p><strong>Submit Ideas</strong> • Annotate Plans • Vote & Fund Projects</p>
                     <div style="margin: 15px 0; padding: 15px; background: #FFFFCC; border: 2px solid #FFAA00;">
                         <p style="font-size: 0.9rem; margin: 0 0 10px 0; font-weight: bold; color: #CC6600;">🎯 HOW IT WORKS:</p>
-                        <p style="font-size: 0.85rem; margin: 0 0 5px 0;">1. <strong>Community Members:</strong> View site plans, draw annotations, add sticky notes</p>
-                        <p style="font-size: 0.85rem; margin: 0 0 5px 0;">2. <strong>Submit Feedback:</strong> Send your marked-up plans to developers</p>
-                        <p style="font-size: 0.85rem; margin: 0;">3. <strong>Developers Bid:</strong> Review feedback and bid on implementation projects</p>
+                        <p style="font-size: 0.85rem; margin: 0 0 5px 0;">1. <strong>Create Proposal:</strong> View site plans, draw ideas, add notes & budget</p>
+                        <p style="font-size: 0.85rem; margin: 0 0 5px 0;">2. <strong>Community Votes:</strong> Vote "Build" or "Demolish" on proposals</p>
+                        <p style="font-size: 0.85rem; margin: 0;">3. <strong>Fund Together:</strong> Contribute to make your favorite projects happen!</p>
                     </div>
                     <img src="HPCP Logo.png" alt="HPCP" style="max-width: 150px; margin: 10px auto; display: block; border: 2px solid #999; padding: 8px; background: white;">
                 </div>
 
                 <div class="action-boxes">
                     <div class="action-box">
-                        <h3>📝 Community Member</h3>
-                        <p>View site plans, draw your ideas, add comments</p>
-                        <button class="action-button" id="btn-community-map">View Site Map</button>
+                        <h3>🏗️ Create a Proposal</h3>
+                        <p>View site plans, draw your ideas, set budget</p>
+                        <button class="action-button" id="btn-create-proposal">Start Planning</button>
                     </div>
                     <div class="action-box">
-                        <h3>💼 Developer</h3>
-                        <p>Review submissions, place bids on projects</p>
-                        <button class="action-button" id="btn-developer-portal">Developer Portal</button>
+                        <h3>📊 Browse Proposals</h3>
+                        <p>Vote and contribute to community projects</p>
+                        <button class="action-button" id="btn-browse-proposals">View All</button>
                     </div>
                 </div>
 
                 <div class="recent-submissions">
-                    <h2>Recent Community Submissions</h2>
-                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px;">Latest feedback from community members</p>
-                    <div class="submission-preview" id="submission-preview-list">
-                        <div class="preview-item">
-                            <span class="preview-date">Nov 24, 2025</span>
-                            <span class="preview-title">Community Member submitted 8 annotated slides</span>
-                            <span class="preview-status status-new">NEW</span>
-                        </div>
-                        <div class="preview-item">
-                            <span class="preview-date">Nov 23, 2025</span>
-                            <span class="preview-title">Board Member submitted 5 annotated slides with notes</span>
-                            <span class="preview-status status-reviewed">3 BIDS</span>
-                        </div>
-                        <div class="preview-item">
-                            <span class="preview-date">Nov 22, 2025</span>
-                            <span class="preview-title">Community Member submitted 12 annotated slides</span>
-                            <span class="preview-status status-reviewed">5 BIDS</span>
-                        </div>
-                        <div class="preview-item">
-                            <span class="preview-date">Nov 21, 2025</span>
-                            <span class="preview-title">Community Member submitted 3 annotated slides</span>
-                            <span class="preview-status status-reviewed">2 BIDS</span>
-                        </div>
-                        <div class="preview-item">
-                            <span class="preview-date">Nov 20, 2025</span>
-                            <span class="preview-title">Board Member submitted 15 annotated slides with detailed notes</span>
-                            <span class="preview-status status-reviewed">7 BIDS</span>
-                        </div>
+                    <h2>🔥 Top Proposals</h2>
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px;">Highest voted community projects • Sign in to vote & contribute!</p>
+                    <div class="proposals-list" id="proposals-list">
+                        <!-- Proposals will be dynamically loaded here -->
                     </div>
-                    <button class="view-all-btn" id="view-all-submissions">View All Submissions →</button>
+                    <button class="view-all-btn" id="view-all-proposals">Browse All Proposals →</button>
                 </div>
             </div>
 
             <!-- Right Sidebar - Ads -->
             <div class="right-sidebar">
                 <div class="ad-box">
-                    <div class="ad-header">SPONSORED</div>
-                    <h4 style="margin: 5px 0; color: #FF0000;">LOSE 30 LBS<br>IN 30 DAYS!</h4>
-                    <p style="font-size: 0.75rem; margin: 5px 0;">Doctors HATE this<br>one simple trick!</p>
-                    <button class="ad-button">CLICK HERE!</button>
-                    <p style="font-size: 0.6rem; color: #999; margin-top: 5px;">*Results may vary</p>
+                    <div class="ad-header">PLAYGROUND SALE</div>
+                    <h4 style="margin: 5px 0; color: #FF6600;">Swing Sets<br>50% OFF!</h4>
+                    <p style="font-size: 0.75rem; margin: 5px 0;">Commercial grade<br>Free shipping!</p>
+                    <button class="ad-button">BUY NOW!</button>
+                    <p style="font-size: 0.6rem; color: #999; margin-top: 5px;">*While supplies last</p>
                 </div>
 
                 <div class="ad-box">
-                    <div class="ad-header">ASTORIA FITNESS</div>
-                    <h4 style="margin: 5px 0; color: #003366;">Get RIPPED<br>in 90 Days</h4>
-                    <p style="font-size: 0.75rem; margin: 5px 0;">First Month<br>FREE!</p>
-                    <button class="ad-button">JOIN NOW!</button>
+                    <div class="ad-header">PARK SUPPLIES</div>
+                    <h4 style="margin: 5px 0; color: #006600;">Metal Benches<br>$199 Each</h4>
+                    <p style="font-size: 0.75rem; margin: 5px 0;">Bulk discounts<br>available!</p>
+                    <button class="ad-button">QUOTE NOW</button>
                 </div>
 
                 <div class="ad-box">
-                    <div class="ad-header">HOT DEALS</div>
-                    <h4 style="margin: 5px 0; color: #CC0000;">Designer Jeans<br>$19.99</h4>
-                    <p style="font-size: 0.75rem; margin: 5px 0;">Name brands at<br>wholesale prices!</p>
+                    <div class="ad-header">CLEARANCE!</div>
+                    <h4 style="margin: 5px 0; color: #CC0000;">Trash Bins<br>SALE!</h4>
+                    <p style="font-size: 0.75rem; margin: 5px 0;">32-96 gallon<br>Starting at $45</p>
                     <button class="ad-button">SHOP NOW</button>
                 </div>
 
                 <div class="ad-box">
-                    <div class="ad-header">HEALTH ALERT</div>
-                    <h4 style="margin: 5px 0; color: #006600;">Natural Energy<br>BOOST!</h4>
-                    <p style="font-size: 0.75rem; margin: 5px 0;">No crash!<br>100% Herbal!</p>
-                    <button class="ad-button">TRY FREE</button>
+                    <div class="ad-header">LANDSCAPING</div>
+                    <h4 style="margin: 5px 0; color: #006600;">Community<br>Gardens!</h4>
+                    <p style="font-size: 0.75rem; margin: 5px 0;">Raised beds<br>& soil kits</p>
+                    <button class="ad-button">GET QUOTE</button>
                 </div>
 
                 <div class="ad-box">
-                    <div class="ad-header">LOCAL BUSINESS</div>
-                    <h4 style="margin: 5px 0; color: #003366;">Astoria Pizza<br>& Subs</h4>
-                    <p style="font-size: 0.75rem; margin: 5px 0;">Buy 1 Get 1<br>FREE Slice!</p>
-                    <button class="ad-button">ORDER</button>
+                    <div class="ad-header">LIGHTING DEALS</div>
+                    <h4 style="margin: 5px 0; color: #003366;">LED Street<br>Lamps</h4>
+                    <p style="font-size: 0.75rem; margin: 5px 0;">Energy efficient<br>10-year warranty!</p>
+                    <button class="ad-button">LEARN MORE</button>
                 </div>
             </div>
         </div>
@@ -2371,54 +2789,47 @@
     </div>
 
     <script>
-        // Randomly select which home video to display
-        const videos = ['homevideos/homevideo_01.mp4', 'homevideos/homevideo_02.mp4'];
-        const randomVideo = videos[Math.floor(Math.random() * videos.length)];
-        document.getElementById('video-source').src = randomVideo;
-        document.getElementById('home-video').load();
+        document.addEventListener('DOMContentLoaded', function() {
+            // Randomly select which home video to display
+            const videos = ['homevideos/homevideo_01.mp4', 'homevideos/homevideo_02.mp4'];
+            const randomVideo = videos[Math.floor(Math.random() * videos.length)];
+            const videoSource = document.getElementById('video-source');
+            const homeVideo = document.getElementById('home-video');
+            if (videoSource && homeVideo) {
+                videoSource.src = randomVideo;
+                homeVideo.load();
+            }
 
-        // Add click handlers for header buttons
-        document.getElementById('mission-button').addEventListener('click', function() {
-            openMissionPage();
-        });
+            // Add click handler for menu-community (map functionality)
+            const menuCommunity = document.getElementById('menu-community');
+            if (menuCommunity) {
+                menuCommunity.addEventListener('click', function() {
+                    // Hide menu boxes and header
+                    document.querySelector('main').classList.add('hidden');
+                    document.querySelector('header').classList.add('hidden');
 
-        document.getElementById('member-button').addEventListener('click', function() {
-            openMemberPage();
-        });
+                    // Start directly at slideshow3 (images 20, 21, 21.5)
+                    document.getElementById('slideshow3').style.display = 'block';
+                    document.getElementById('overlay').style.display = 'block';
 
-        // Add click handlers for menu boxes
-        document.getElementById('menu-developers').addEventListener('click', function() {
-            openDeveloperPortal();
-        });
+                    document.getElementById('slideshow3').classList.add('active');
+                    document.getElementById('overlay').classList.add('active');
 
-        document.getElementById('menu-community').addEventListener('click', function() {
-            // Hide menu boxes and header
-            document.querySelector('main').classList.add('hidden');
-            document.querySelector('header').classList.add('hidden');
-
-            // Start directly at slideshow3 (images 20, 21, 21.5)
-            document.getElementById('slideshow3').style.display = 'block';
-            document.getElementById('overlay').style.display = 'block';
-
-            document.getElementById('slideshow3').classList.add('active');
-            document.getElementById('overlay').classList.add('active');
-
-            // Show clickable points after slideshow3 completes and overlay starts blinking (2s animation + small delay)
-            setTimeout(() => {
-                document.querySelectorAll('.clickable-point').forEach(point => {
-                    point.style.display = 'block';
-                    point.classList.add('animation-active');
+                    // Show clickable points after slideshow3 completes and overlay starts blinking (2s animation + small delay)
+                    setTimeout(() => {
+                        document.querySelectorAll('.clickable-point').forEach(point => {
+                            point.style.display = 'block';
+                            point.classList.add('animation-active');
+                        });
+                        // Show cursor animation demo
+                        document.getElementById('cursor-demo').classList.add('active');
+                        // Show back to menu button
+                        if (typeof showBackToMenuButton === 'function') {
+                            showBackToMenuButton();
+                        }
+                    }, 2500);
                 });
-                // Show cursor animation demo
-                document.getElementById('cursor-demo').classList.add('active');
-                // Show back to menu button
-                showBackToMenuButton();
-            }, 2500);
-        });
-
-        document.getElementById('menu-board').addEventListener('click', function() {
-            // TODO: Add board members functionality
-            alert('Board Member portal coming soon!');
+            }
         });
     </script>
 
