@@ -1207,3 +1207,31 @@ document.getElementById('membership-form').addEventListener('submit', (e) => {
     e.target.reset();
     closeMemberPage();
 });
+
+// ===== NAVIGATION LINKS FUNCTIONALITY =====
+
+// Developer portal link
+document.getElementById('nav-developers').addEventListener('click', (e) => {
+    e.preventDefault();
+    openDeveloperPortal();
+});
+
+// Community map link
+document.getElementById('nav-community').addEventListener('click', (e) => {
+    e.preventDefault();
+    // Existing menu community functionality
+    document.getElementById('menu-community').click();
+});
+
+// Landing page action buttons
+document.getElementById('btn-community-map').addEventListener('click', () => {
+    document.getElementById('menu-community').click();
+});
+
+document.getElementById('btn-developer-portal').addEventListener('click', () => {
+    openDeveloperPortal();
+});
+
+document.getElementById('view-all-submissions').addEventListener('click', () => {
+    openDeveloperPortal();
+});
