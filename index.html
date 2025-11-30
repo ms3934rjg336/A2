@@ -1212,6 +1212,28 @@
             border: 2px inset #999;
         }
 
+        .preset-amount-btn {
+            font-family: Verdana, Arial, sans-serif;
+            padding: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            background: #F0F0F0;
+            border: 2px outset #999;
+            cursor: pointer;
+            color: #003366;
+        }
+
+        .preset-amount-btn:hover {
+            background: #E0E0E0;
+        }
+
+        .preset-amount-btn:active,
+        .preset-amount-btn.selected {
+            border: 2px inset #999;
+            background: #66BB66;
+            color: white;
+        }
+
         /* Shake animation for login error */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -1943,7 +1965,7 @@
 
         .vote-btn {
             font-family: Verdana, Arial, sans-serif;
-            font-size: 1.5rem;
+            font-size: 0.75rem;
             width: 100px;
             height: 45px;
             cursor: pointer;
@@ -2265,6 +2287,125 @@
             <p style="text-align: center; margin-top: 15px; font-size: 0.85rem; color: #666;">
                 Demo credentials: user@halletts.org / password
             </p>
+        </div>
+    </div>
+
+    <!-- Vote Modal -->
+    <div class="login-modal" id="vote-modal">
+        <div class="login-box" style="max-width: 600px;">
+            <div class="login-header">
+                <h2 id="vote-modal-title">Cast Your Vote</h2>
+            </div>
+            <div style="padding: 20px; background: #F5F5F5; border: 2px inset #CCC; margin: 15px 0;">
+                <div id="vote-modal-image" style="margin-bottom: 15px; text-align: center;">
+                    <!-- Project image will be inserted here -->
+                </div>
+                <div style="font-family: Verdana, Arial, sans-serif;">
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 8px;">Project Description:</p>
+                    <p id="vote-modal-description" style="font-size: 0.9rem; color: #333; line-height: 1.4; margin-bottom: 12px;"></p>
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 5px;">Budget:</p>
+                    <p id="vote-modal-budget" style="font-size: 1.1rem; font-weight: bold; color: #CC6600;"></p>
+                </div>
+            </div>
+            <p id="vote-modal-question" style="text-align: center; font-size: 1rem; font-weight: bold; margin: 15px 0; font-family: Verdana, Arial, sans-serif;"></p>
+            <div class="login-buttons">
+                <button type="button" class="login-btn login-btn-secondary" id="vote-cancel">Cancel</button>
+                <button type="button" class="login-btn login-btn-primary" id="vote-confirm">Confirm Vote</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contribution Modal -->
+    <div class="login-modal" id="contribution-modal">
+        <div class="login-box" style="max-width: 600px;">
+            <div class="login-header">
+                <h2 id="contribution-modal-title">Contribute to Project</h2>
+            </div>
+            <div style="padding: 20px; background: #F5F5F5; border: 2px inset #CCC; margin: 15px 0;">
+                <div id="contribution-modal-image" style="margin-bottom: 15px; text-align: center;">
+                    <!-- Project image will be inserted here -->
+                </div>
+                <div style="font-family: Verdana, Arial, sans-serif;">
+                    <p style="font-size: 0.85rem; color: #666; margin-bottom: 8px;">Project Description:</p>
+                    <p id="contribution-modal-description" style="font-size: 0.9rem; color: #333; line-height: 1.4; margin-bottom: 12px;"></p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px;">
+                        <div>
+                            <p style="font-size: 0.75rem; color: #666;">Budget:</p>
+                            <p id="contribution-modal-budget" style="font-size: 1rem; font-weight: bold; color: #CC6600;"></p>
+                        </div>
+                        <div>
+                            <p style="font-size: 0.75rem; color: #666;">Already Raised:</p>
+                            <p id="contribution-modal-raised" style="font-size: 1rem; font-weight: bold; color: #66BB66;"></p>
+                        </div>
+                        <div>
+                            <p style="font-size: 0.75rem; color: #666;">Remaining:</p>
+                            <p id="contribution-modal-remaining" style="font-size: 1rem; font-weight: bold; color: #003366;"></p>
+                        </div>
+                        <div>
+                            <p style="font-size: 0.75rem; color: #666;">Backers:</p>
+                            <p id="contribution-modal-backers" style="font-size: 1rem; font-weight: bold; color: #666;"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group" style="margin: 15px 0;">
+                <label class="form-label">Select Amount</label>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px;">
+                    <button type="button" class="preset-amount-btn" data-amount="5">$5</button>
+                    <button type="button" class="preset-amount-btn" data-amount="10">$10</button>
+                    <button type="button" class="preset-amount-btn" data-amount="15">$15</button>
+                    <button type="button" class="preset-amount-btn" data-amount="25">$25</button>
+                    <button type="button" class="preset-amount-btn" data-amount="50">$50</button>
+                    <button type="button" class="preset-amount-btn" data-amount="100">$100</button>
+                </div>
+                <label class="form-label" for="contribution-amount">Or Enter Custom Amount ($)</label>
+                <input type="number" class="form-input" id="contribution-amount" placeholder="Enter amount" min="1" step="1" value="100">
+            </div>
+            <div class="login-buttons">
+                <button type="button" class="login-btn login-btn-secondary" id="contribution-cancel">Cancel</button>
+                <button type="button" class="login-btn login-btn-primary" id="contribution-continue">Continue to Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="login-modal" id="payment-modal">
+        <div class="login-box" style="max-width: 500px;">
+            <div class="login-header">
+                <h2>Payment Information</h2>
+                <p id="payment-amount-display" style="font-size: 1.2rem; font-weight: bold; color: #66BB66;"></p>
+            </div>
+            <form id="payment-form" style="padding: 0 20px 20px 20px;">
+                <div class="form-group">
+                    <label class="form-label" for="card-number">Card Number</label>
+                    <input type="text" class="form-input" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label class="form-label" for="card-expiry">Expiration Date</label>
+                        <input type="text" class="form-input" id="card-expiry" placeholder="MM/YY" maxlength="5" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="card-cvc">CVC</label>
+                        <input type="text" class="form-input" id="card-cvc" placeholder="123" maxlength="3" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="card-name">Cardholder Name</label>
+                    <input type="text" class="form-input" id="card-name" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="billing-zip">Billing ZIP Code</label>
+                    <input type="text" class="form-input" id="billing-zip" placeholder="12345" maxlength="5" required>
+                </div>
+                <div style="background: #FFF9E6; border: 2px solid #FFD700; padding: 10px; margin: 15px 0; font-size: 0.75rem; font-family: Verdana, Arial, sans-serif;">
+                    <p style="margin: 0; color: #666;">🔒 This is a demo payment portal. No actual charges will be made.</p>
+                </div>
+                <div class="login-buttons" style="margin-top: 15px;">
+                    <button type="button" class="login-btn login-btn-secondary" id="payment-cancel">Back</button>
+                    <button type="submit" class="login-btn login-btn-primary">Complete Payment</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -2658,7 +2799,7 @@
                 </div>
 
                 <div class="recent-submissions">
-                    <h2>🔥 Top Proposals</h2>
+                    <h2>⭐ Top Proposals</h2>
                     <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px;">Highest voted community projects • Sign in to vote & contribute!</p>
                     <div class="proposals-list" id="proposals-list">
                         <!-- Proposals will be dynamically loaded here -->

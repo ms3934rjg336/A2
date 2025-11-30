@@ -992,27 +992,34 @@ function handleVote(e) {
 
     if (proposalIndex === -1) return;
 
-    // Increment vote
-    proposals[proposalIndex].votes[voteType]++;
+    const proposal = proposals[proposalIndex];
 
-    // Save back to localStorage
-    localStorage.setItem('communityProposals', JSON.stringify(proposals));
+    // Show vote confirmation modal
+    showVoteModal(proposal, voteType, () => {
+        // Increment vote
+        proposals[proposalIndex].votes[voteType]++;
 
-    // Reload proposals
-    loadProposals();
-    // Also reload if on browse page
-    const browsePage = document.getElementById('browse-proposals-page');
-    if (browsePage && browsePage.classList.contains('active')) {
-        loadAllProposals();
-    }
+        // Save back to localStorage
+        localStorage.setItem('communityProposals', JSON.stringify(proposals));
 
-    // Show feedback
-    const voteLabel = voteType === 'build' ? 'BUILD 👍' : 'DEMOLISH 👎';
-    alert(`Your vote for "${voteLabel}" has been recorded!\n\nProposal: ${proposals[proposalIndex].title}`);
+        // Reload proposals
+        loadProposals();
+        // Also reload if on browse page
+        const browsePage = document.getElementById('browse-proposals-page');
+        if (browsePage && browsePage.classList.contains('active')) {
+            loadAllProposals();
+        }
+    });
 }
 
 // Handle contributions
 function handleContribution(e) {
+    // Check if user is signed in
+    if (!checkSignIn()) {
+        showSignInModal();
+        return;
+    }
+
     const proposalId = parseInt(e.currentTarget.getAttribute('data-proposal-id'));
 
     const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
@@ -1021,35 +1028,24 @@ function handleContribution(e) {
     if (proposalIndex === -1) return;
 
     const proposal = proposals[proposalIndex];
-    const remaining = proposal.budget - proposal.funding.raised;
 
-    // Prompt for contribution amount
-    const amountStr = prompt(`Contribute to: ${proposal.title}\n\nBudget: $${proposal.budget.toLocaleString()}\nRaised: $${proposal.funding.raised.toLocaleString()}\nRemaining: $${remaining.toLocaleString()}\n\nHow much would you like to contribute?`, '100');
+    // Show contribution modal
+    showContributionModal(proposal, (amount) => {
+        // Add contribution
+        proposals[proposalIndex].funding.raised += amount;
+        proposals[proposalIndex].funding.backers++;
 
-    if (amountStr === null) return; // User cancelled
+        // Save back to localStorage
+        localStorage.setItem('communityProposals', JSON.stringify(proposals));
 
-    const amount = parseInt(amountStr);
-
-    if (isNaN(amount) || amount <= 0) {
-        alert('Please enter a valid contribution amount.');
-        return;
-    }
-
-    // Add contribution
-    proposals[proposalIndex].funding.raised += amount;
-    proposals[proposalIndex].funding.backers++;
-
-    // Save back to localStorage
-    localStorage.setItem('communityProposals', JSON.stringify(proposals));
-
-    // Reload proposals
-    loadProposals();
-
-    // Show success message
-    const newTotal = proposals[proposalIndex].funding.raised;
-    const percentFunded = Math.min((newTotal / proposal.budget) * 100, 100).toFixed(1);
-
-    alert(`Thank you for your contribution of $${amount.toLocaleString()}!\n\nProject: ${proposal.title}\nTotal Raised: $${newTotal.toLocaleString()} (${percentFunded}% funded)`);
+        // Reload proposals
+        loadProposals();
+        // Also reload if on browse page
+        const browsePage = document.getElementById('browse-proposals-page');
+        if (browsePage && browsePage.classList.contains('active')) {
+            loadAllProposals();
+        }
+    });
 }
 
 // Load proposals when page loads
@@ -1276,6 +1272,10 @@ document.getElementById('membership-form').addEventListener('submit', (e) => {
 // Community map link
 document.getElementById('nav-community').addEventListener('click', (e) => {
     e.preventDefault();
+    if (!checkSignIn()) {
+        showSignInModal();
+        return;
+    }
     document.getElementById('menu-community').click();
 });
 
@@ -1292,27 +1292,22 @@ document.getElementById('nav-proposals').addEventListener('click', (e) => {
 // Create proposal link
 document.getElementById('nav-create').addEventListener('click', (e) => {
     e.preventDefault();
+    if (!checkSignIn()) {
+        showSignInModal();
+        return;
+    }
     document.getElementById('menu-community').click();
 });
 
 // Landing page action buttons
 document.getElementById('btn-create-proposal').addEventListener('click', () => {
+    if (!checkSignIn()) {
+        showSignInModal();
+        return;
+    }
     document.getElementById('menu-community').click();
 });
 
-document.getElementById('btn-browse-proposals').addEventListener('click', () => {
-    // Scroll to proposals section
-    const proposalsSection = document.querySelector('.recent-submissions');
-    if (proposalsSection) {
-        proposalsSection.scrollIntoView({ behavior: 'smooth' });
-    }
-});
-
-document.getElementById('view-all-proposals').addEventListener('click', () => {
-    // Could open a full proposals page in the future
-    // For now, just reload to show all proposals
-    loadProposals();
-});
 
 // Navigation sidebar links
 document.getElementById('nav-home').addEventListener('click', (e) => {
@@ -1412,6 +1407,218 @@ document.getElementById('signin-modal').addEventListener('click', (e) => {
     }
 });
 
+// ===== VOTE MODAL =====
+
+let currentVoteCallback = null;
+
+function showVoteModal(proposal, voteType, callback) {
+    currentVoteCallback = callback;
+
+    const modal = document.getElementById('vote-modal');
+    const voteLabel = voteType === 'build' ? 'BUILD 👍' : 'DEMOLISH 👎';
+
+    // Set title and question
+    document.getElementById('vote-modal-title').textContent = proposal.title;
+    document.getElementById('vote-modal-question').textContent = `Vote to ${voteLabel}?`;
+
+    // Limit description to 150 characters
+    const description = proposal.description.length > 150
+        ? proposal.description.substring(0, 150) + '...'
+        : proposal.description;
+    document.getElementById('vote-modal-description').textContent = description;
+
+    // Set budget
+    document.getElementById('vote-modal-budget').textContent = `$${proposal.budget.toLocaleString()}`;
+
+    // Show first image if available
+    const imageContainer = document.getElementById('vote-modal-image');
+    if (proposal.referencePhotos && proposal.referencePhotos.length > 0) {
+        imageContainer.innerHTML = `<img src="${proposal.referencePhotos[0]}" style="max-width: 100%; max-height: 200px; border: 2px solid #999;">`;
+    } else {
+        imageContainer.innerHTML = '';
+    }
+
+    modal.classList.add('active');
+}
+
+function hideVoteModal() {
+    const modal = document.getElementById('vote-modal');
+    modal.classList.remove('active');
+    currentVoteCallback = null;
+}
+
+document.getElementById('vote-confirm').addEventListener('click', () => {
+    if (currentVoteCallback) {
+        currentVoteCallback();
+    }
+    hideVoteModal();
+});
+
+document.getElementById('vote-cancel').addEventListener('click', hideVoteModal);
+
+document.getElementById('vote-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'vote-modal') {
+        hideVoteModal();
+    }
+});
+
+// ===== CONTRIBUTION MODAL =====
+
+let currentContributionCallback = null;
+
+function showContributionModal(proposal, callback) {
+    currentContributionCallback = callback;
+
+    const modal = document.getElementById('contribution-modal');
+    const remaining = proposal.budget - proposal.funding.raised;
+
+    // Set title
+    document.getElementById('contribution-modal-title').textContent = proposal.title;
+
+    // Limit description to 150 characters
+    const description = proposal.description.length > 150
+        ? proposal.description.substring(0, 150) + '...'
+        : proposal.description;
+    document.getElementById('contribution-modal-description').textContent = description;
+
+    // Set funding details
+    document.getElementById('contribution-modal-budget').textContent = `$${proposal.budget.toLocaleString()}`;
+    document.getElementById('contribution-modal-raised').textContent = `$${proposal.funding.raised.toLocaleString()}`;
+    document.getElementById('contribution-modal-remaining').textContent = `$${remaining.toLocaleString()}`;
+    document.getElementById('contribution-modal-backers').textContent = proposal.funding.backers;
+
+    // Show first image if available
+    const imageContainer = document.getElementById('contribution-modal-image');
+    if (proposal.referencePhotos && proposal.referencePhotos.length > 0) {
+        imageContainer.innerHTML = `<img src="${proposal.referencePhotos[0]}" style="max-width: 100%; max-height: 200px; border: 2px solid #999;">`;
+    } else {
+        imageContainer.innerHTML = '';
+    }
+
+    // Reset amount input
+    document.getElementById('contribution-amount').value = '100';
+
+    modal.classList.add('active');
+}
+
+function hideContributionModal() {
+    const modal = document.getElementById('contribution-modal');
+    modal.classList.remove('active');
+    currentContributionCallback = null;
+}
+
+// Preset amount buttons
+document.querySelectorAll('.preset-amount-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        // Remove selected class from all buttons
+        document.querySelectorAll('.preset-amount-btn').forEach(b => b.classList.remove('selected'));
+        // Add selected class to clicked button
+        e.target.classList.add('selected');
+        // Set the amount
+        const amount = e.target.getAttribute('data-amount');
+        document.getElementById('contribution-amount').value = amount;
+    });
+});
+
+document.getElementById('contribution-continue').addEventListener('click', () => {
+    const amount = parseInt(document.getElementById('contribution-amount').value);
+
+    if (isNaN(amount) || amount <= 0) {
+        alert('Please enter a valid contribution amount.');
+        return;
+    }
+
+    // Show payment modal
+    showPaymentModal(amount);
+});
+
+document.getElementById('contribution-cancel').addEventListener('click', hideContributionModal);
+
+document.getElementById('contribution-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'contribution-modal') {
+        hideContributionModal();
+    }
+});
+
+// ===== PAYMENT MODAL =====
+
+let currentPaymentAmount = 0;
+
+function showPaymentModal(amount) {
+    currentPaymentAmount = amount;
+    const modal = document.getElementById('payment-modal');
+
+    // Display amount
+    document.getElementById('payment-amount-display').textContent = `Amount: $${amount.toLocaleString()}`;
+
+    // Reset form
+    document.getElementById('payment-form').reset();
+
+    // Hide contribution modal
+    hideContributionModal();
+
+    // Show payment modal
+    modal.classList.add('active');
+}
+
+function hidePaymentModal() {
+    const modal = document.getElementById('payment-modal');
+    modal.classList.remove('active');
+}
+
+// Format card number with spaces
+document.getElementById('card-number').addEventListener('input', (e) => {
+    let value = e.target.value.replace(/\s/g, '').replace(/\D/g, '');
+    let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+    e.target.value = formattedValue;
+});
+
+// Format expiry date with slash
+document.getElementById('card-expiry').addEventListener('input', (e) => {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length >= 2) {
+        value = value.substring(0, 2) + '/' + value.substring(2, 4);
+    }
+    e.target.value = value;
+});
+
+// Only allow numbers in CVC
+document.getElementById('card-cvc').addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '');
+});
+
+// Only allow numbers in ZIP
+document.getElementById('billing-zip').addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/\D/g, '');
+});
+
+// Payment form handler
+document.getElementById('payment-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    // Process payment (fake)
+    if (currentContributionCallback) {
+        currentContributionCallback(currentPaymentAmount);
+    }
+
+    hidePaymentModal();
+
+    // Show success message
+    alert(`Payment successful! Thank you for contributing $${currentPaymentAmount.toLocaleString()}!`);
+});
+
+document.getElementById('payment-cancel').addEventListener('click', () => {
+    hidePaymentModal();
+    // Show contribution modal again
+    document.getElementById('contribution-modal').classList.add('active');
+});
+
+document.getElementById('payment-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'payment-modal') {
+        hidePaymentModal();
+    }
+});
+
 // ===== BROWSE ALL PROPOSALS PAGE =====
 
 function openBrowseProposalsPage() {
@@ -1467,3 +1674,7 @@ function loadAllProposals() {
 }
 
 document.getElementById('close-browse-proposals').addEventListener('click', closeBrowseProposalsPage);
+
+// Wire up browse proposals buttons
+document.getElementById('view-all-proposals').addEventListener('click', openBrowseProposalsPage);
+document.getElementById('btn-browse-proposals').addEventListener('click', openBrowseProposalsPage);
