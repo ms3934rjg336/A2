@@ -1234,6 +1234,74 @@
             color: white;
         }
 
+        /* Proposal Count Badge on Map Zones */
+        .proposal-count-badge {
+            position: fixed;
+            background: #CC3333;
+            color: white;
+            font-family: Verdana, Arial, sans-serif;
+            font-weight: bold;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            border: 3px outset #AA2222;
+            border-radius: 50%;
+            min-width: 40px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1000;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .proposal-count-badge:hover {
+            background: #DD4444;
+            transform: translate(-50%, -50%) scale(1.1);
+            animation: none;
+        }
+
+        .proposal-count-badge.no-proposals {
+            background: #999;
+            border-color: #777;
+            opacity: 0.5;
+            cursor: default;
+            animation: none;
+        }
+
+        .proposal-count-badge.no-proposals:hover {
+            transform: translate(-50%, -50%);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+        }
+
+        /* Template Buttons */
+        .template-btn {
+            font-family: Verdana, Arial, sans-serif;
+            padding: 12px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            background: #F0F0F0;
+            border: 2px outset #999;
+            cursor: pointer;
+            color: #003366;
+            text-align: center;
+        }
+
+        .template-btn:hover {
+            background: #E0E0E0;
+        }
+
+        .template-btn:active {
+            border: 2px inset #999;
+            background: #D0D0D0;
+        }
+
         /* Shake animation for login error */
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -2182,6 +2250,26 @@
             <button class="tool-button" id="sticky-tool" title="Add Sticky Note">📝</button>
         </div>
 
+        <!-- Quick Add Template Icons -->
+        <div id="template-icons-toolbar" style="position: fixed; left: 20px; top: 100px; z-index: 9999; background: rgba(255,255,255,0.95); border: 3px solid #999; border-style: outset; padding: 15px; max-width: 200px; border-radius: 0;">
+            <div style="font-family: Verdana, Arial, sans-serif; font-weight: bold; font-size: 0.85rem; color: #003366; margin-bottom: 10px; text-align: center;">Quick Add Items</div>
+            <div style="font-size: 0.7rem; color: #666; margin-bottom: 10px; text-align: center; font-family: Verdana, Arial, sans-serif;">Drag & drop onto image</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                <div class="template-icon" draggable="true" data-template="bench" title="Park Bench" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🪑</div>
+                <div class="template-icon" draggable="true" data-template="swing" title="Swing Set" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🎠</div>
+                <div class="template-icon" draggable="true" data-template="trash" title="Trash Can" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🗑️</div>
+                <div class="template-icon" draggable="true" data-template="slide" title="Playground Slide" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🛝</div>
+                <div class="template-icon" draggable="true" data-template="shelter" title="Bus Shelter" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🚏</div>
+                <div class="template-icon" draggable="true" data-template="recycle" title="Recycling Bin" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">♻️</div>
+                <div class="template-icon" draggable="true" data-template="compost" title="Composting Bin" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🌱</div>
+                <div class="template-icon" draggable="true" data-template="garden" title="Community Garden" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🌻</div>
+                <div class="template-icon" draggable="true" data-template="light" title="Street Light" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">💡</div>
+                <div class="template-icon" draggable="true" data-template="fountain" title="Water Fountain" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">⛲</div>
+                <div class="template-icon" draggable="true" data-template="bike" title="Bike Rack" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🚲</div>
+                <div class="template-icon" draggable="true" data-template="tree" title="Tree Planting" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🌳</div>
+            </div>
+        </div>
+
         <div id="slideshow-nav">
             <button id="prev-slide">←</button>
             <span id="slide-counter">1 / 27</span>
@@ -2232,6 +2320,26 @@
                 </div>
             </div>
 
+            <!-- Pre-Drawn Templates Section -->
+            <h2 style="font-family: Verdana, Arial, sans-serif; color: #003366; margin: 20px 0 15px 0;">Quick Add Common Items</h2>
+            <div style="background: white; border: 3px solid #999; padding: 20px; margin-bottom: 20px;">
+                <p style="font-family: Verdana, Arial, sans-serif; font-size: 0.85rem; color: #666; margin-bottom: 15px;">Click to add pre-drawn proposals for common community items:</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px;">
+                    <button class="template-btn" data-template="bench">🪑 Park Bench</button>
+                    <button class="template-btn" data-template="swing">🎠 Swing Set</button>
+                    <button class="template-btn" data-template="trash">🗑️ Trash Can</button>
+                    <button class="template-btn" data-template="slide">🛝 Playground Slide</button>
+                    <button class="template-btn" data-template="shelter">🚏 Bus Shelter</button>
+                    <button class="template-btn" data-template="recycle">♻️ Recycling Bin</button>
+                    <button class="template-btn" data-template="compost">🌱 Composting Bin</button>
+                    <button class="template-btn" data-template="garden">🌻 Community Garden</button>
+                    <button class="template-btn" data-template="light">💡 Street Light</button>
+                    <button class="template-btn" data-template="fountain">⛲ Water Fountain</button>
+                    <button class="template-btn" data-template="bike">🚲 Bike Rack</button>
+                    <button class="template-btn" data-template="tree">🌳 Tree Planting</button>
+                </div>
+            </div>
+
             <h2 style="font-family: Verdana, Arial, sans-serif; color: #003366; margin: 0 0 15px 0;">Your Annotated Slides</h2>
             <div id="annotated-slides-grid"></div>
         </div>
@@ -2244,18 +2352,23 @@
     <button id="menu-community" style="display: none;"></button>
     <button id="menu-board" style="display: none;"></button>
 
-    <!-- Browse All Proposals Page -->
-    <div class="form-page" id="browse-proposals-page">
-        <div class="form-page-header">
-            <button class="form-page-close" id="close-browse-proposals">Back to Home</button>
-            <h1>Browse All Proposals</h1>
-            <p>Vote and contribute to community projects</p>
-        </div>
-        <div class="form-page-content">
-            <div class="content-section">
-                <div id="all-proposals-list" style="display: flex; flex-direction: column; gap: 20px;">
-                    <!-- All proposals will be loaded here -->
-                </div>
+    <!-- Browse All Proposals Page (Spatial Map View) -->
+    <div id="browse-proposals-page" style="display: none;">
+        <!-- This will show the map with proposal count badges on each zone -->
+    </div>
+
+    <!-- Proposal Details Modal (shows proposals for selected zone) -->
+    <div class="login-modal" id="zone-proposals-modal">
+        <div class="login-box" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div class="login-header">
+                <h2 id="zone-modal-title">Proposals in This Zone</h2>
+                <p id="zone-modal-subtitle" style="font-size: 0.9rem; color: #666;"></p>
+            </div>
+            <div id="zone-proposals-list" style="padding: 0 20px 20px 20px; display: flex; flex-direction: column; gap: 20px;">
+                <!-- Zone proposals will be loaded here -->
+            </div>
+            <div class="login-buttons" style="margin: 0 20px 20px 20px;">
+                <button type="button" class="login-btn login-btn-primary" id="close-zone-modal">Close</button>
             </div>
         </div>
     </div>
@@ -2380,14 +2493,14 @@
                     <label class="form-label" for="card-number">Card Number</label>
                     <input type="text" class="form-input" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19" required>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div class="form-group">
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+                    <div class="form-group" style="min-width: 0;">
                         <label class="form-label" for="card-expiry">Expiration Date</label>
-                        <input type="text" class="form-input" id="card-expiry" placeholder="MM/YY" maxlength="5" required>
+                        <input type="text" class="form-input" id="card-expiry" style="width: 100%;" placeholder="MM/YY" maxlength="5" required>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group" style="min-width: 0;">
                         <label class="form-label" for="card-cvc">CVC</label>
-                        <input type="text" class="form-input" id="card-cvc" placeholder="123" maxlength="3" required>
+                        <input type="text" class="form-input" id="card-cvc" style="width: 100%;" placeholder="123" maxlength="3" required>
                     </div>
                 </div>
                 <div class="form-group">
@@ -2406,6 +2519,37 @@
                     <button type="submit" class="login-btn login-btn-primary">Complete Payment</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Custom Alert Modal -->
+    <div class="login-modal" id="custom-alert-modal">
+        <div class="login-box" style="max-width: 400px;">
+            <div class="login-header" style="background: #66BB66; color: white; border-bottom: 3px solid #449944;">
+                <h2 id="custom-alert-title" style="color: white; margin: 0;">Success!</h2>
+            </div>
+            <div style="padding: 20px; font-family: Verdana, Arial, sans-serif; font-size: 0.9rem; color: #333; line-height: 1.6;">
+                <p id="custom-alert-message" style="margin: 0;"></p>
+            </div>
+            <div class="login-buttons" style="margin: 0 20px 20px 20px;">
+                <button type="button" class="login-btn login-btn-primary" id="custom-alert-ok" style="width: 100%;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div class="login-modal" id="custom-confirm-modal">
+        <div class="login-box" style="max-width: 500px;">
+            <div class="login-header">
+                <h2 id="custom-confirm-title">Confirm Action</h2>
+            </div>
+            <div style="padding: 20px; font-family: Verdana, Arial, sans-serif; font-size: 0.9rem; color: #333; line-height: 1.6; white-space: pre-line;">
+                <p id="custom-confirm-message" style="margin: 0;"></p>
+            </div>
+            <div class="login-buttons" style="margin: 0 20px 20px 20px;">
+                <button type="button" class="login-btn login-btn-secondary" id="custom-confirm-cancel">Cancel</button>
+                <button type="button" class="login-btn login-btn-primary" id="custom-confirm-ok">Confirm</button>
+            </div>
         </div>
     </div>
 

@@ -1,3 +1,15 @@
+// ===== POINT IMAGE RANGE CONFIGURATION =====
+const pointImageRanges = {
+    point2: { startImageNum: 180, totalSlides: 42 },  // Images 180-221
+    point3: { startImageNum: 90, totalSlides: 26 },   // Images 90-115
+    point4: { startImageNum: 62, totalSlides: 28 },   // Images 62-89
+    point8: { startImageNum: 300, totalSlides: 7 },   // Images 300-306
+    point10: { startImageNum: 263, totalSlides: 25 }, // Images 263-287
+    point11: { startImageNum: 236, totalSlides: 27 }, // Images 236-262
+    point13: { startImageNum: 28, totalSlides: 26 },  // Images 28-53
+    point14: { startImageNum: 1, totalSlides: 7 }     // Images 001-007
+};
+
 // Preload all images to prevent white flash
 const img00 = new Image();
 img00.src = 'site-walk-path/images/00.jpg';
@@ -56,10 +68,13 @@ for (let i = 1; i <= 15; i++) {
     point.addEventListener('click', function(e) {
         // Only trigger action if not dragging
         if (e.detail === 1) {
-            if (i === 9) {
-                openSlideshow();
+            const pointId = `point${i}`;
+            const config = pointImageRanges[pointId];
+
+            if (config) {
+                openSlideshow(config, pointId);
             } else {
-                alert(`Point ${i} clicked! Add your action here.`);
+                alert(`Point ${i} clicked! Configuration needed.`);
             }
         }
     });
@@ -99,10 +114,11 @@ videoPoints.forEach(pointNum => {
     }
 });
 
-// Slideshow functionality for Point 9
+// Slideshow functionality
 let currentSlide = 0;
-const totalSlides = 27; // Images from 236 to 262 (27 images total)
-const startImageNum = 236;
+let totalSlides = 27; // Will be set dynamically by config
+let startImageNum = 236; // Will be set dynamically by config
+let currentPointId = null; // Track which point opened the slideshow
 
 // Annotation system - store annotations per slide
 const annotationsData = {};
@@ -111,18 +127,24 @@ let isDrawing = false;
 let canvasContext = null;
 let drawingCanvas = null;
 
-function openSlideshow() {
+function openSlideshow(config = { startImageNum: 236, totalSlides: 27 }, pointId = null) {
+    // Set the slideshow configuration
+    startImageNum = config.startImageNum;
+    totalSlides = config.totalSlides;
+    currentPointId = pointId;
+    selectedSlide = pointId; // Link proposal to zone
+
     const slideshowPage = document.getElementById('slideshow-page');
     const slideshowImages = document.getElementById('slideshow-images');
 
     // Clear any existing images
     slideshowImages.innerHTML = '';
 
-    // Load all images
+    // Load all images with proper zero-padding
     for (let i = 0; i < totalSlides; i++) {
         const img = document.createElement('img');
         const imageNum = startImageNum + i;
-        img.src = `images/astoria_Documentation-${imageNum}.jpg`;
+        img.src = `images/astoria_Documentation-${String(imageNum).padStart(3, '0')}.jpg`;
         img.alt = `Slide ${i + 1}`;
         slideshowImages.appendChild(img);
     }
@@ -480,6 +502,106 @@ function makeDraggable(element) {
     }
 }
 
+// ===== TEMPLATE ICON DRAG & DROP =====
+
+function initializeTemplateDragDrop() {
+    const templateIcons = document.querySelectorAll('.template-icon');
+    const slideshowContainer = document.getElementById('slideshow-container');
+
+    templateIcons.forEach(icon => {
+        icon.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('template', e.target.getAttribute('data-template'));
+            e.dataTransfer.effectAllowed = 'copy';
+            e.target.style.opacity = '0.5';
+        });
+
+        icon.addEventListener('dragend', (e) => {
+            e.target.style.opacity = '1';
+        });
+    });
+
+    // Allow drop on slideshow container
+    slideshowContainer.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+    });
+
+    slideshowContainer.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const template = e.dataTransfer.getData('template');
+        if (template) {
+            // Get the drop position relative to the slideshow container
+            const rect = slideshowContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            createTemplateIcon(template, x, y);
+        }
+    });
+}
+
+function createTemplateIcon(template, x, y) {
+    const container = document.getElementById('slideshow-container');
+    const templates = {
+        bench: '🪑',
+        swing: '🎠',
+        trash: '🗑️',
+        slide: '🛝',
+        shelter: '🚏',
+        recycle: '♻️',
+        compost: '🌱',
+        garden: '🌻',
+        light: '💡',
+        fountain: '⛲',
+        bike: '🚲',
+        tree: '🌳'
+    };
+
+    const iconDiv = document.createElement('div');
+    iconDiv.className = 'sticky-note'; // Reuse sticky note styling
+    iconDiv.style.left = x + 'px';
+    iconDiv.style.top = y + 'px';
+    iconDiv.style.transform = 'translate(-50%, -50%)';
+    iconDiv.style.fontSize = '3rem';
+    iconDiv.style.padding = '10px';
+    iconDiv.style.background = 'rgba(255, 255, 255, 0.9)';
+    iconDiv.style.minWidth = '60px';
+    iconDiv.style.minHeight = '60px';
+    iconDiv.style.display = 'flex';
+    iconDiv.style.alignItems = 'center';
+    iconDiv.style.justifyContent = 'center';
+
+    iconDiv.textContent = templates[template] || '?';
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-sticky';
+    deleteBtn.textContent = '×';
+    deleteBtn.addEventListener('click', () => {
+        iconDiv.remove();
+    });
+
+    iconDiv.appendChild(deleteBtn);
+    container.appendChild(iconDiv);
+
+    // Make the icon draggable within the container
+    makeDraggable(iconDiv);
+}
+
+// Initialize template drag & drop when slideshow opens
+const originalOpenSlideshow = openSlideshow;
+window.addEventListener('load', () => {
+    // Override after page load
+    const slideshowPage = document.getElementById('slideshow-page');
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.target === slideshowPage && slideshowPage.style.display === 'block') {
+                initializeTemplateDragDrop();
+            }
+        });
+    });
+    observer.observe(slideshowPage, { attributes: true, attributeFilter: ['style'] });
+});
+
 function saveAnnotationsForSlide() {
     const container = document.getElementById('slideshow-container');
 
@@ -813,7 +935,8 @@ function submitToCommunity() {
 
     const confirmMsg = `Submit your proposal to the community?\n\nTitle: ${title}\nBudget: $${budget.toLocaleString()}\nAnnotated Slides: ${annotatedSlides.length}\n\nYour proposal will be visible to all community members who can vote and contribute!`;
 
-    if (confirm(confirmMsg)) {
+    customConfirm(confirmMsg, 'Submit Proposal').then((confirmed) => {
+    if (confirmed) {
         // Save to localStorage as community proposal
         const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
 
@@ -826,6 +949,7 @@ function submitToCommunity() {
             description: description,
             annotations: JSON.parse(JSON.stringify(annotationsData)), // Deep copy
             referencePhotos: referencePhotos,
+            selectedSlide: selectedSlide, // Add the zone/slide info
             votes: {
                 build: 0,
                 demolish: 0
@@ -840,40 +964,41 @@ function submitToCommunity() {
         localStorage.setItem('communityProposals', JSON.stringify(proposals));
 
         // Show success message
-        alert('Success! Your proposal has been submitted to the community.\n\nCommunity members can now view, vote, and contribute to your project!');
+        customAlert('Your proposal has been submitted to the community.\n\nCommunity members can now view, vote, and contribute to your project!', 'Success!').then(() => {
+            // Clear form and go back to home
+            document.getElementById('proposal-title').value = '';
+            document.getElementById('proposal-budget').value = '';
+            document.getElementById('proposal-description').value = '';
+            document.getElementById('reference-photos').value = '';
+            document.getElementById('photo-preview').innerHTML = '';
 
-        // Clear form and go back to home
-        document.getElementById('proposal-title').value = '';
-        document.getElementById('proposal-budget').value = '';
-        document.getElementById('proposal-description').value = '';
-        document.getElementById('reference-photos').value = '';
-        document.getElementById('photo-preview').innerHTML = '';
+            closeSubmissionPage();
+            closeSlideshow();
 
-        closeSubmissionPage();
-        closeSlideshow();
+            // Go back to homepage properly
+            document.getElementById('slideshow3').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('slideshow3').classList.remove('active');
+            document.getElementById('overlay').classList.remove('active');
 
-        // Go back to homepage properly
-        document.getElementById('slideshow3').style.display = 'none';
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('slideshow3').classList.remove('active');
-        document.getElementById('overlay').classList.remove('active');
+            document.querySelectorAll('.clickable-point').forEach(point => {
+                point.style.display = 'none';
+                point.classList.remove('animation-active');
+            });
+            document.getElementById('cursor-demo').classList.remove('active');
 
-        document.querySelectorAll('.clickable-point').forEach(point => {
-            point.style.display = 'none';
-            point.classList.remove('animation-active');
+            document.querySelector('main').classList.remove('hidden');
+            document.querySelector('header').classList.remove('hidden');
+            hideBackToMenuButton();
+
+            // Reload proposals on landing page
+            loadProposals();
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
-        document.getElementById('cursor-demo').classList.remove('active');
-
-        document.querySelector('main').classList.remove('hidden');
-        document.querySelector('header').classList.remove('hidden');
-        hideBackToMenuButton();
-
-        // Reload proposals on landing page
-        loadProposals();
-
-        // Scroll to top
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+    });
 }
 
 // ===== COMMUNITY PROPOSALS FUNCTIONALITY =====
@@ -908,6 +1033,52 @@ function loadProposals() {
     attachProposalEventListeners();
 }
 
+// Create image preview for proposal card
+function createProposalImagePreview(proposal) {
+    // Check if proposal has annotations
+    if (!proposal.annotations || Object.keys(proposal.annotations).length === 0) {
+        console.log('No annotations found for proposal:', proposal.id);
+        return '';
+    }
+
+    // Get the first annotated slide
+    const firstSlideKey = Object.keys(proposal.annotations)[0];
+    const firstAnnotation = proposal.annotations[firstSlideKey];
+
+    // Determine the image number from selectedSlide (point ID) and slide index
+    const pointId = proposal.selectedSlide;
+    const slideIndex = parseInt(firstSlideKey);
+
+    console.log('Creating preview for proposal:', proposal.id, 'pointId:', pointId, 'slideIndex:', slideIndex);
+
+    // Get the point configuration to calculate image number
+    const config = pointImageRanges[pointId];
+    if (!config) {
+        console.warn('No config found for pointId:', pointId, 'Available configs:', Object.keys(pointImageRanges));
+        return ''; // No config found, skip preview
+    }
+
+    const imageNum = config.startImageNum + slideIndex;
+    const imagePath = `images/astoria_Documentation-${String(imageNum).padStart(3, '0')}.jpg`;
+
+    console.log('Image path:', imagePath, 'Has canvas annotation:', !!firstAnnotation.canvas);
+
+    return `
+        <div style="margin: 12px 0; padding: 10px; background: #f5f5f5; border: 2px solid #999; border-style: inset;">
+            <div style="position: relative; width: 100%; max-width: 400px; margin: 0 auto; aspect-ratio: 4/3; border: 2px solid #666; border-style: outset; overflow: hidden; background: #000;">
+                <img src="${imagePath}"
+                     style="width: 100%; height: 100%; object-fit: contain;"
+                     alt="Proposal preview"
+                     onerror="console.error('Failed to load image:', this.src)">
+                ${firstAnnotation.canvas ? `<img src="${firstAnnotation.canvas}"
+                     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;"
+                     onerror="console.error('Failed to load canvas annotation')">` : ''}
+            </div>
+            <p style="font-size: 0.75rem; color: #666; text-align: center; margin: 8px 0 0 0; font-family: Verdana, Arial, sans-serif;">Preview of annotated proposal (Slide ${slideIndex + 1})</p>
+        </div>
+    `;
+}
+
 // Create HTML for a proposal card
 function createProposalCard(proposal) {
     const fundingPercent = Math.min((proposal.funding.raised / proposal.budget) * 100, 100);
@@ -927,6 +1098,8 @@ function createProposalCard(proposal) {
             </div>
 
             <div class="proposal-description">${proposal.description}</div>
+
+            ${createProposalImagePreview(proposal)}
 
             <div class="funding-section">
                 <strong style="font-size: 0.9rem; color: #333;">Community Funding</strong>
@@ -1004,10 +1177,10 @@ function handleVote(e) {
 
         // Reload proposals
         loadProposals();
-        // Also reload if on browse page
+        // Also reload if on browse page (refresh the badges)
         const browsePage = document.getElementById('browse-proposals-page');
-        if (browsePage && browsePage.classList.contains('active')) {
-            loadAllProposals();
+        if (browsePage && browsePage.style.display === 'block') {
+            loadProposalBadges();
         }
     });
 }
@@ -1040,10 +1213,10 @@ function handleContribution(e) {
 
         // Reload proposals
         loadProposals();
-        // Also reload if on browse page
+        // Also reload if on browse page (refresh the badges)
         const browsePage = document.getElementById('browse-proposals-page');
-        if (browsePage && browsePage.classList.contains('active')) {
-            loadAllProposals();
+        if (browsePage && browsePage.style.display === 'block') {
+            loadProposalBadges();
         }
     });
 }
@@ -1064,6 +1237,13 @@ function hideBackToMenuButton() {
 }
 
 function goBackToMenu() {
+    // Check if browse page is open and close it
+    const browsePage = document.getElementById('browse-proposals-page');
+    if (browsePage && browsePage.style.display === 'block') {
+        closeBrowseProposalsPage();
+        return;
+    }
+
     // Hide aerial map elements
     document.getElementById('slideshow3').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
@@ -1074,8 +1254,8 @@ function goBackToMenu() {
     document.getElementById('cursor-demo').classList.remove('active');
 
     // Show main menu
-    document.querySelector('main').classList.remove('hidden');
-    document.querySelector('header').classList.remove('hidden');
+    document.querySelector('main').classList.remove('page-hidden');
+    document.querySelector('header').classList.remove('page-hidden');
 
     // Hide back button
     hideBackToMenuButton();
@@ -1355,6 +1535,9 @@ document.getElementById('member-button').addEventListener('click', () => {
 // Track if user is signed in
 let userSignedIn = false;
 
+// TEMPORARY: Disable sign-in requirement for demo/testing
+const SIGN_IN_DISABLED = true;
+
 // Demo credentials
 const DEMO_USER = {
     username: 'user@halletts.org',
@@ -1379,6 +1562,10 @@ function hideSignInModal() {
 }
 
 function checkSignIn() {
+    // TEMPORARY: Return true if sign-in is disabled (for demo/testing)
+    if (SIGN_IN_DISABLED) {
+        return true;
+    }
     return userSignedIn;
 }
 
@@ -1604,7 +1791,7 @@ document.getElementById('payment-form').addEventListener('submit', (e) => {
     hidePaymentModal();
 
     // Show success message
-    alert(`Payment successful! Thank you for contributing $${currentPaymentAmount.toLocaleString()}!`);
+    customAlert(`Thank you for contributing $${currentPaymentAmount.toLocaleString()}!`, 'Payment Successful!');
 });
 
 document.getElementById('payment-cancel').addEventListener('click', () => {
@@ -1619,62 +1806,236 @@ document.getElementById('payment-modal').addEventListener('click', (e) => {
     }
 });
 
-// ===== BROWSE ALL PROPOSALS PAGE =====
+// ===== BROWSE ALL PROPOSALS PAGE (SPATIAL MAP VIEW) =====
+
+// Define zone positions (matching the clickable points from the map)
+const zonePositions = [
+    { id: 'point1', left: '51.503596%', top: '4.894534%', name: 'Zone 1' },
+    { id: 'point2', left: '51.553199%', top: '15.704843%', name: 'Zone 2' },
+    { id: 'point3', left: '61.921444%', top: '15.378307%', name: 'Zone 3' },
+    { id: 'point4', left: '72.160424%', top: '17.922234%', name: 'Zone 4' },
+    { id: 'point5', left: '66.835161%', top: '28.004598%', name: 'Zone 5' },
+    { id: 'point6', left: '51.361641%', top: '37.181801%', name: 'Zone 6' },
+    { id: 'point7', left: '66.849518%', top: '42.853055%', name: 'Zone 7' },
+    { id: 'point8', left: '22.755235%', top: '45.283878%', name: 'Zone 8' },
+    { id: 'point9', left: '30.786059%', top: '45.480583%', name: 'Zone 9' },
+    { id: 'point10', left: '38.273481%', top: '45.094269%', name: 'Zone 10' },
+    { id: 'point11', left: '45.709004%', top: '45.444688%', name: 'Zone 11' },
+    { id: 'point12', left: '51.406013%', top: '57.324289%', name: 'Zone 12' },
+    { id: 'point13', left: '66.717644%', top: '56.887496%', name: 'Zone 13' },
+    { id: 'point14', left: '23.904598%', top: '69.77731%', name: 'Zone 14' },
+    { id: 'point15', left: '34.860905%', top: '79.744504%', name: 'Zone 15' }
+];
 
 function openBrowseProposalsPage() {
     const browsePage = document.getElementById('browse-proposals-page');
     const main = document.querySelector('main');
     const header = document.querySelector('header');
+    const slideshow3 = document.getElementById('slideshow3');
+    const overlay = document.getElementById('overlay');
 
-    main.classList.add('page-hidden');
-    header.classList.add('page-hidden');
-    browsePage.classList.add('active');
+    // Hide main content
+    main.style.display = 'none';
+    header.style.display = 'none';
 
-    // Load all proposals
-    loadAllProposals();
+    // Show map background with proper styling
+    slideshow3.style.display = 'block';
+    slideshow3.style.backgroundImage = 'url("aerial-imagery/site-aerial.jpg")';
+    slideshow3.style.backgroundSize = 'cover';
+    slideshow3.style.backgroundPosition = 'center';
+    slideshow3.style.opacity = '1';
+
+    overlay.style.display = 'block';
+    overlay.style.opacity = '1';
+
+    browsePage.style.display = 'block';
+
+    // Show back button
+    showBackToMenuButton();
+
+    // Load proposal count badges on the map
+    loadProposalBadges();
 }
 
 function closeBrowseProposalsPage() {
     const browsePage = document.getElementById('browse-proposals-page');
     const main = document.querySelector('main');
     const header = document.querySelector('header');
+    const slideshow3 = document.getElementById('slideshow3');
+    const overlay = document.getElementById('overlay');
 
-    main.classList.remove('page-hidden');
-    header.classList.remove('page-hidden');
-    browsePage.classList.remove('active');
+    // Hide map and badges
+    slideshow3.style.display = 'none';
+    slideshow3.style.opacity = '0';
+    overlay.style.display = 'none';
+    overlay.style.opacity = '0';
+    browsePage.style.display = 'none';
+    browsePage.innerHTML = ''; // Clear badges
+
+    // Show main content
+    main.style.display = 'block';
+    header.style.display = 'block';
+
+    // Hide back button
+    hideBackToMenuButton();
 }
 
-function loadAllProposals() {
+function loadProposalBadges() {
     const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
-    const allProposalsList = document.getElementById('all-proposals-list');
+    const browsePage = document.getElementById('browse-proposals-page');
 
-    if (!allProposalsList) return;
+    // Count proposals per zone
+    const zoneCounts = {};
+    zonePositions.forEach(zone => {
+        zoneCounts[zone.id] = proposals.filter(p => p.selectedSlide === zone.id).length;
+    });
 
-    if (proposals.length === 0) {
-        allProposalsList.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #666; font-family: Verdana, Arial, sans-serif;">
-                <p style="font-size: 1.1rem; margin-bottom: 10px;">No proposals yet!</p>
-                <p style="font-size: 0.9rem;">Be the first to submit a community proposal.</p>
+    // Create badges for each zone
+    browsePage.innerHTML = zonePositions.map(zone => {
+        const count = zoneCounts[zone.id] || 0;
+        const hasProposals = count > 0;
+
+        return `
+            <div class="proposal-count-badge ${hasProposals ? '' : 'no-proposals'}"
+                 data-zone-id="${zone.id}"
+                 data-zone-name="${zone.name}"
+                 style="left: ${zone.left}; top: ${zone.top};"
+                 ${hasProposals ? `onclick="showZoneProposals('${zone.id}', '${zone.name}')"` : ''}>
+                ${count}
             </div>
         `;
-        return;
-    }
+    }).join('');
+}
 
-    // Sort by net votes (Build - Demolish) descending
-    const sortedProposals = proposals.sort((a, b) => {
+function showZoneProposals(zoneId, zoneName) {
+    const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
+    const zoneProposals = proposals.filter(p => p.selectedSlide === zoneId);
+
+    // Sort by net votes
+    const sortedProposals = zoneProposals.sort((a, b) => {
         const aNetVotes = a.votes.build - a.votes.demolish;
         const bNetVotes = b.votes.build - b.votes.demolish;
         return bNetVotes - aNetVotes;
     });
 
-    allProposalsList.innerHTML = sortedProposals.map(proposal => createProposalCard(proposal)).join('');
+    // Set modal title
+    document.getElementById('zone-modal-title').textContent = `${zoneName} Proposals`;
+    document.getElementById('zone-modal-subtitle').textContent = `${sortedProposals.length} proposal${sortedProposals.length !== 1 ? 's' : ''} in this zone`;
+
+    // Load proposals into modal
+    const zoneProposalsList = document.getElementById('zone-proposals-list');
+    zoneProposalsList.innerHTML = sortedProposals.map(proposal => createProposalCard(proposal)).join('');
+
+    // Show modal
+    document.getElementById('zone-proposals-modal').classList.add('active');
 
     // Add event listeners for voting and funding
     attachProposalEventListeners();
 }
 
-document.getElementById('close-browse-proposals').addEventListener('click', closeBrowseProposalsPage);
+function hideZoneProposalsModal() {
+    document.getElementById('zone-proposals-modal').classList.remove('active');
+}
+
+// Event listeners for zone modal
+document.getElementById('close-zone-modal').addEventListener('click', hideZoneProposalsModal);
+
+document.getElementById('zone-proposals-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'zone-proposals-modal') {
+        hideZoneProposalsModal();
+    }
+});
 
 // Wire up browse proposals buttons
 document.getElementById('view-all-proposals').addEventListener('click', openBrowseProposalsPage);
 document.getElementById('btn-browse-proposals').addEventListener('click', openBrowseProposalsPage);
+
+// ===== CUSTOM ALERT/CONFIRM MODALS =====
+
+let customAlertCallback = null;
+let customConfirmCallback = null;
+
+function customAlert(message, title = 'Success!') {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('custom-alert-modal');
+        document.getElementById('custom-alert-title').textContent = title;
+        document.getElementById('custom-alert-message').textContent = message;
+
+        customAlertCallback = () => {
+            modal.classList.remove('active');
+            customAlertCallback = null;
+            resolve();
+        };
+
+        modal.classList.add('active');
+    });
+}
+
+function customConfirm(message, title = 'Confirm Action') {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('custom-confirm-modal');
+        document.getElementById('custom-confirm-title').textContent = title;
+        document.getElementById('custom-confirm-message').textContent = message;
+
+        customConfirmCallback = (result) => {
+            modal.classList.remove('active');
+            customConfirmCallback = null;
+            resolve(result);
+        };
+
+        modal.classList.add('active');
+    });
+}
+
+document.getElementById('custom-alert-ok').addEventListener('click', () => {
+    if (customAlertCallback) customAlertCallback();
+});
+
+document.getElementById('custom-confirm-ok').addEventListener('click', () => {
+    if (customConfirmCallback) customConfirmCallback(true);
+});
+
+document.getElementById('custom-confirm-cancel').addEventListener('click', () => {
+    if (customConfirmCallback) customConfirmCallback(false);
+});
+
+document.getElementById('custom-alert-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'custom-alert-modal' && customAlertCallback) {
+        customAlertCallback();
+    }
+});
+
+document.getElementById('custom-confirm-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'custom-confirm-modal' && customConfirmCallback) {
+        customConfirmCallback(false);
+    }
+});
+
+// ===== PRE-DRAWN TEMPLATES =====
+
+const templates = {
+    bench: { title: 'Install Park Bench', budget: 1500, description: 'Add a comfortable park bench for community members to rest and enjoy the outdoors.' },
+    swing: { title: 'Add Swing Set', budget: 8000, description: 'Install a safe, modern swing set for children to enjoy.' },
+    trash: { title: 'Place Trash Can', budget: 300, description: 'Add a durable trash receptacle to keep our community clean.' },
+    slide: { title: 'Install Playground Slide', budget: 5000, description: 'Add a fun and safe slide for children in the playground area.' },
+    shelter: { title: 'Build Bus Shelter', budget: 15000, description: 'Construct a weather-protected shelter for bus riders.' },
+    recycle: { title: 'Add Recycling Bin', budget: 400, description: 'Place recycling bins to promote environmental sustainability.' },
+    compost: { title: 'Install Composting Bin', budget: 600, description: 'Add composting bins for organic waste management.' },
+    garden: { title: 'Create Community Garden', budget: 12000, description: 'Establish a shared garden space for residents to grow vegetables and flowers.' },
+    light: { title: 'Install Street Light', budget: 3500, description: 'Add lighting to improve safety and visibility in the evening.' },
+    fountain: { title: 'Add Water Fountain', budget: 2500, description: 'Install a public drinking fountain for community members and visitors.' },
+    bike: { title: 'Install Bike Rack', budget: 800, description: 'Add secure bike parking to encourage cycling in the community.' },
+    tree: { title: 'Plant Trees', budget: 2000, description: 'Plant new trees to beautify the area and improve air quality.' }
+};
+
+document.querySelectorAll('.template-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const template = templates[e.currentTarget.getAttribute('data-template')];
+        if (template) {
+            document.getElementById('proposal-title').value = template.title;
+            document.getElementById('proposal-budget').value = template.budget;
+            document.getElementById('proposal-description').value = template.description;
+            customAlert('Template applied! You can now customize the details or submit as-is.', 'Template Added');
+        }
+    });
+});
