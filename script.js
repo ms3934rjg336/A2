@@ -558,29 +558,69 @@ function createTemplateIcon(template, x, y) {
     };
 
     const iconDiv = document.createElement('div');
-    iconDiv.className = 'sticky-note'; // Reuse sticky note styling
+    iconDiv.className = 'template-icon-instance';
+    iconDiv.style.position = 'absolute';
     iconDiv.style.left = x + 'px';
     iconDiv.style.top = y + 'px';
     iconDiv.style.transform = 'translate(-50%, -50%)';
-    iconDiv.style.fontSize = '3rem';
-    iconDiv.style.padding = '10px';
-    iconDiv.style.background = 'rgba(255, 255, 255, 0.9)';
-    iconDiv.style.minWidth = '60px';
-    iconDiv.style.minHeight = '60px';
-    iconDiv.style.display = 'flex';
-    iconDiv.style.alignItems = 'center';
-    iconDiv.style.justifyContent = 'center';
+    iconDiv.style.fontSize = '4rem';
+    iconDiv.style.background = 'transparent';
+    iconDiv.style.cursor = 'grab';
+    iconDiv.style.userSelect = 'none';
+    iconDiv.dataset.scale = '1';
 
-    iconDiv.textContent = templates[template] || '?';
+    const iconSpan = document.createElement('span');
+    iconSpan.textContent = templates[template] || '?';
+    iconSpan.style.display = 'block';
+    iconDiv.appendChild(iconSpan);
 
+    // Delete button
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'delete-sticky';
     deleteBtn.textContent = '×';
+    deleteBtn.style.position = 'absolute';
+    deleteBtn.style.top = '-5px';
+    deleteBtn.style.right = '-5px';
     deleteBtn.addEventListener('click', () => {
         iconDiv.remove();
     });
 
+    // Scale button
+    const scaleBtn = document.createElement('button');
+    scaleBtn.className = 'delete-sticky'; // Reuse styling
+    scaleBtn.textContent = '⤢';
+    scaleBtn.style.position = 'absolute';
+    scaleBtn.style.top = '-5px';
+    scaleBtn.style.left = '-5px';
+    scaleBtn.style.fontSize = '1rem';
+    scaleBtn.title = 'Scale icon';
+
+    let isScaling = false;
+    let startScale = 1;
+    let startY = 0;
+
+    scaleBtn.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        isScaling = true;
+        startY = e.clientY;
+        startScale = parseFloat(iconDiv.dataset.scale);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isScaling) {
+            const deltaY = startY - e.clientY;
+            const newScale = Math.max(0.5, Math.min(3, startScale + deltaY / 100));
+            iconDiv.dataset.scale = newScale;
+            iconSpan.style.transform = `scale(${newScale})`;
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        isScaling = false;
+    });
+
     iconDiv.appendChild(deleteBtn);
+    iconDiv.appendChild(scaleBtn);
     container.appendChild(iconDiv);
 
     // Make the icon draggable within the container
@@ -628,11 +668,23 @@ function saveAnnotationsForSlide() {
         };
     });
 
-    // Only save if there's actual content
-    if (canvasData || stickyNotes.length > 0) {
+    // Save template icons
+    const templateIcons = Array.from(container.querySelectorAll('.template-icon-instance')).map(icon => {
+        return {
+            left: icon.style.left,
+            top: icon.style.top,
+            transform: icon.style.transform,
+            scale: icon.dataset.scale,
+            emoji: icon.querySelector('span').textContent
+        };
+    });
+
+    // Only save if there's actual content (canvas drawing, sticky notes, or template icons)
+    if (canvasData || stickyNotes.length > 0 || templateIcons.length > 0) {
         annotationsData[currentSlide] = {
             canvas: canvasData,
             stickyNotes: stickyNotes,
+            templateIcons: templateIcons,
             comment: annotationsData[currentSlide]?.comment || '' // Preserve existing comment
         };
     } else {
@@ -644,9 +696,10 @@ function saveAnnotationsForSlide() {
 function loadAnnotationsForSlide(slideIndex) {
     const container = document.getElementById('slideshow-container');
 
-    // Clear current canvas and sticky notes
+    // Clear current canvas, sticky notes, and template icons
     canvasContext.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
     container.querySelectorAll('.sticky-note').forEach(note => note.remove());
+    container.querySelectorAll('.template-icon-instance').forEach(icon => icon.remove());
 
     // Load saved annotations if they exist
     if (annotationsData[slideIndex]) {
@@ -690,6 +743,43 @@ function loadAnnotationsForSlide(slideIndex) {
                 makeDraggable(stickyNote);
             });
         }
+
+        // Load template icons
+        if (data.templateIcons) {
+            data.templateIcons.forEach(iconData => {
+                const iconDiv = document.createElement('div');
+                iconDiv.className = 'template-icon-instance';
+                iconDiv.style.position = 'absolute';
+                iconDiv.style.left = iconData.left;
+                iconDiv.style.top = iconData.top;
+                iconDiv.style.transform = iconData.transform;
+                iconDiv.style.fontSize = '4rem';
+                iconDiv.style.background = 'transparent';
+                iconDiv.style.cursor = 'grab';
+                iconDiv.dataset.scale = iconData.scale;
+
+                const iconSpan = document.createElement('span');
+                iconSpan.textContent = iconData.emoji;
+                iconSpan.style.display = 'block';
+                iconSpan.style.transform = `scale(${iconData.scale})`;
+                iconDiv.appendChild(iconSpan);
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-sticky';
+                deleteBtn.textContent = '×';
+                deleteBtn.style.position = 'absolute';
+                deleteBtn.style.top = '-5px';
+                deleteBtn.style.right = '-5px';
+                deleteBtn.addEventListener('click', () => {
+                    iconDiv.remove();
+                });
+
+                iconDiv.appendChild(deleteBtn);
+                container.appendChild(iconDiv);
+
+                makeDraggable(iconDiv);
+            });
+        }
     }
 }
 
@@ -718,10 +808,14 @@ function openSubmissionPage() {
 
     const submissionPage = document.getElementById('submission-page');
     const slideshowPage = document.getElementById('slideshow-page');
+    const header = document.querySelector('header');
 
-    // Hide slideshow, show submission
+    // Hide slideshow and header, show submission
     slideshowPage.style.display = 'none';
     submissionPage.style.display = 'block';
+    if (header) {
+        header.style.display = 'none';
+    }
 
     // Generate submission preview
     generateSubmissionPreview();
@@ -730,10 +824,14 @@ function openSubmissionPage() {
 function closeSubmissionPage() {
     const submissionPage = document.getElementById('submission-page');
     const slideshowPage = document.getElementById('slideshow-page');
+    const header = document.querySelector('header');
 
     // Hide submission, show slideshow
     submissionPage.style.display = 'none';
     slideshowPage.style.display = 'block';
+    if (header) {
+        header.style.display = 'block';
+    }
 }
 
 function generateSubmissionPreview() {
@@ -1065,7 +1163,8 @@ function createProposalImagePreview(proposal) {
 
     return `
         <div style="margin: 12px 0; padding: 10px; background: #f5f5f5; border: 2px solid #999; border-style: inset;">
-            <div style="position: relative; width: 100%; max-width: 400px; margin: 0 auto; aspect-ratio: 4/3; border: 2px solid #666; border-style: outset; overflow: hidden; background: #000;">
+            <div class="proposal-preview-container" onclick="expandProposalPreview('${imagePath}', '${firstAnnotation.canvas || ''}', ${proposal.id})"
+                 style="position: relative; width: 100%; max-width: 400px; margin: 0 auto; aspect-ratio: 4/3; border: 2px solid #666; border-style: outset; overflow: hidden; background: #000; cursor: pointer;">
                 <img src="${imagePath}"
                      style="width: 100%; height: 100%; object-fit: contain;"
                      alt="Proposal preview"
@@ -1073,10 +1172,41 @@ function createProposalImagePreview(proposal) {
                 ${firstAnnotation.canvas ? `<img src="${firstAnnotation.canvas}"
                      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;"
                      onerror="console.error('Failed to load canvas annotation')">` : ''}
+                <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 3px; font-size: 0.7rem; font-family: Verdana, Arial, sans-serif;">Click to expand</div>
             </div>
             <p style="font-size: 0.75rem; color: #666; text-align: center; margin: 8px 0 0 0; font-family: Verdana, Arial, sans-serif;">Preview of annotated proposal (Slide ${slideIndex + 1})</p>
         </div>
     `;
+}
+
+// Expand proposal preview in modal
+function expandProposalPreview(imagePath, canvasDataUrl, proposalId) {
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'login-modal active';
+    modal.style.zIndex = '10000';
+    modal.innerHTML = `
+        <div class="login-box" style="max-width: 90vw; max-height: 90vh; padding: 20px;">
+            <div style="position: relative; width: 100%; height: 80vh;">
+                <img src="${imagePath}"
+                     style="width: 100%; height: 100%; object-fit: contain;"
+                     alt="Proposal full view">
+                ${canvasDataUrl ? `<img src="${canvasDataUrl}"
+                     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;">` : ''}
+            </div>
+            <button onclick="this.closest('.login-modal').remove()"
+                    style="margin-top: 15px; padding: 10px 20px; background: #D3D3D3; border: 2px outset #999; cursor: pointer; font-family: Verdana, Arial, sans-serif; font-weight: bold; width: 100%;">Close</button>
+        </div>
+    `;
+
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+
+    document.body.appendChild(modal);
 }
 
 // Create HTML for a proposal card
@@ -1211,12 +1341,22 @@ function handleContribution(e) {
         // Save back to localStorage
         localStorage.setItem('communityProposals', JSON.stringify(proposals));
 
-        // Reload proposals
+        // Reload proposals on homepage
         loadProposals();
+
         // Also reload if on browse page (refresh the badges)
         const browsePage = document.getElementById('browse-proposals-page');
         if (browsePage && browsePage.style.display === 'block') {
             loadProposalBadges();
+        }
+
+        // Reload zone modal if it's open
+        const zoneModal = document.getElementById('zone-proposals-modal');
+        if (zoneModal && zoneModal.classList.contains('active')) {
+            // Re-render the proposals in the modal
+            const zoneId = proposal.selectedSlide;
+            const zoneName = zonePositions.find(z => z.id === zoneId)?.name || 'Zone';
+            showZoneProposals(zoneId, zoneName);
         }
     });
 }
@@ -1244,9 +1384,26 @@ function goBackToMenu() {
         return;
     }
 
+    // Check if slideshow is open and close it
+    const slideshowPage = document.getElementById('slideshow-page');
+    if (slideshowPage && slideshowPage.style.display === 'block') {
+        closeSlideshow();
+    }
+
+    // Check if submission page is open and close it
+    const submissionPage = document.getElementById('submission-page');
+    if (submissionPage && submissionPage.style.display === 'block') {
+        closeSubmissionPage();
+    }
+
     // Hide aerial map elements
     document.getElementById('slideshow3').style.display = 'none';
+    document.getElementById('slideshow3').style.opacity = '0';
+    document.getElementById('slideshow3').classList.remove('active');
     document.getElementById('overlay').style.display = 'none';
+    document.getElementById('overlay').style.opacity = '0';
+    document.getElementById('overlay').classList.remove('active');
+
     document.querySelectorAll('.clickable-point').forEach(point => {
         point.style.display = 'none';
         point.classList.remove('animation-active');
@@ -1255,10 +1412,15 @@ function goBackToMenu() {
 
     // Show main menu
     document.querySelector('main').classList.remove('page-hidden');
+    document.querySelector('main').style.display = 'block';
     document.querySelector('header').classList.remove('page-hidden');
+    document.querySelector('header').style.display = 'block';
 
     // Hide back button
     hideBackToMenuButton();
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // Event listeners for submission page
@@ -1872,9 +2034,13 @@ function closeBrowseProposalsPage() {
     browsePage.style.display = 'none';
     browsePage.innerHTML = ''; // Clear badges
 
-    // Show main content
+    // Show main content and remove any hidden classes
     main.style.display = 'block';
+    main.classList.remove('page-hidden');
+    main.classList.remove('hidden');
     header.style.display = 'block';
+    header.classList.remove('page-hidden');
+    header.classList.remove('hidden');
 
     // Hide back button
     hideBackToMenuButton();
