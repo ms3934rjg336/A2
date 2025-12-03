@@ -347,7 +347,7 @@
         #slideshow-images img {
             width: 100vw;
             height: 100vh;
-            object-fit: cover;
+            object-fit: contain;
             flex-shrink: 0;
         }
 
@@ -492,10 +492,15 @@
             width: 100vw;
             height: 100vh;
             pointer-events: none;
+            z-index: 1000;
         }
 
         .canvas-overlay.drawing {
             pointer-events: auto;
+        }
+
+        .template-icon-instance {
+            z-index: 999 !important;
         }
 
         /* Sticky notes - Forum Style */
@@ -2202,6 +2207,121 @@
                 font-size: 0.8rem;
             }
         }
+
+        /* Additional responsive improvements for all screen sizes */
+        @media (max-width: 1024px) {
+            /* Tablet adjustments */
+            #template-icons-toolbar {
+                width: 180px !important;
+                left: 10px !important;
+                top: 80px !important;
+                padding: 10px !important;
+            }
+
+            .template-icon img {
+                width: 40px !important;
+                height: 40px !important;
+            }
+
+            .proposal-card {
+                margin: 15px 0;
+            }
+
+            .form-page-content {
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            /* Mobile adjustments */
+            header {
+                padding: 15px 20px;
+            }
+
+            #template-icons-toolbar {
+                display: none; /* Hide on mobile, too cluttered */
+            }
+
+            #annotation-toolbar {
+                bottom: 10px;
+                left: 10px;
+                right: 10px;
+                width: auto;
+                flex-wrap: wrap;
+            }
+
+            .tool-button {
+                font-size: 0.7rem;
+                padding: 8px 12px;
+            }
+
+            .proposal-card {
+                margin: 10px 0;
+            }
+
+            .voting-section {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .menu-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+                padding: 15px;
+            }
+        }
+
+        @media (min-width: 1920px) {
+            /* Large desktop adjustments */
+            .container {
+                max-width: 1600px;
+                margin: 0 auto;
+            }
+
+            .menu-grid {
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+
+            .proposal-card {
+                max-width: 1200px;
+                margin: 20px auto;
+            }
+        }
+
+        /* Platform-specific adjustments */
+        @supports (-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px)) {
+            /* Safari/Webkit specific styles */
+            #template-icons-toolbar {
+                -webkit-backdrop-filter: blur(10px);
+                backdrop-filter: blur(10px);
+            }
+        }
+
+        /* Improve scrolling on all platforms */
+        * {
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+        }
+
+        /* Better text rendering */
+        body {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* Prevent zoom on mobile form inputs */
+        @media (max-width: 768px) {
+            input[type="text"],
+            input[type="number"],
+            input[type="email"],
+            input[type="password"],
+            textarea,
+            select {
+                font-size: 16px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -2251,22 +2371,22 @@
         </div>
 
         <!-- Quick Add Template Icons -->
-        <div id="template-icons-toolbar" style="position: fixed; left: 20px; top: 100px; z-index: 9999; background: rgba(255,255,255,0.95); border: 3px solid #999; border-style: outset; padding: 15px; max-width: 200px; border-radius: 0;">
+        <div id="template-icons-toolbar" style="position: fixed; left: 20px; top: 100px; z-index: 9999; background: rgba(255,255,255,0.95); border: 3px solid #999; border-style: outset; padding: 15px; width: 250px; border-radius: 0;">
             <div style="font-family: Verdana, Arial, sans-serif; font-weight: bold; font-size: 0.85rem; color: #003366; margin-bottom: 10px; text-align: center;">Quick Add Items</div>
             <div style="font-size: 0.7rem; color: #666; margin-bottom: 10px; text-align: center; font-family: Verdana, Arial, sans-serif;">Drag & drop onto image</div>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-                <div class="template-icon" draggable="true" data-template="bench" title="Park Bench" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🪑</div>
-                <div class="template-icon" draggable="true" data-template="swing" title="Swing Set" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🎠</div>
-                <div class="template-icon" draggable="true" data-template="trash" title="Trash Can" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🗑️</div>
-                <div class="template-icon" draggable="true" data-template="slide" title="Playground Slide" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🛝</div>
-                <div class="template-icon" draggable="true" data-template="shelter" title="Bus Shelter" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🚏</div>
-                <div class="template-icon" draggable="true" data-template="recycle" title="Recycling Bin" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">♻️</div>
-                <div class="template-icon" draggable="true" data-template="compost" title="Composting Bin" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🌱</div>
-                <div class="template-icon" draggable="true" data-template="garden" title="Community Garden" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🌻</div>
-                <div class="template-icon" draggable="true" data-template="light" title="Street Light" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">💡</div>
-                <div class="template-icon" draggable="true" data-template="fountain" title="Water Fountain" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">⛲</div>
-                <div class="template-icon" draggable="true" data-template="bike" title="Bike Rack" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🚲</div>
-                <div class="template-icon" draggable="true" data-template="tree" title="Tree Planting" style="font-size: 2rem; cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;">🌳</div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%;">
+                <div class="template-icon" draggable="true" data-template="bench" data-icon-src="archive/bench.png" title="Park Bench" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/bench.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="swing" data-icon-src="archive/swing set.png" title="Swing Set" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/swing set.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="trash" data-icon-src="archive/trash bin.png" title="Trash Can" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/trash bin.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="slide" data-icon-src="archive/playground.png" title="Playground Slide" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/playground.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="shelter" data-icon-src="archive/bus stop.png" title="Bus Shelter" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/bus stop.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="recycle" data-icon-src="archive/recycling bin.png" title="Recycling Bin" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/recycling bin.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="compost" data-icon-src="archive/composting bin.png" title="Composting Bin" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/composting bin.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="garden" data-icon-src="archive/community garden.png" title="Community Garden" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/community garden.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="light" data-icon-src="archive/street light.png" title="Street Light" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/street light.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="fountain" data-icon-src="archive/water fountain.png" title="Water Fountain" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/water fountain.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="bike" data-icon-src="archive/bike rack.png" title="Bike Rack" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/bike rack.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="tree" data-icon-src="archive/tree.png" title="Tree Planting" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/tree.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
             </div>
         </div>
 
@@ -2558,7 +2678,7 @@
                 </p>
                 <ul>
                     <li><strong>Visual Annotation Tools:</strong> Mark up site plans with drawings and sticky notes to show exactly what you envision.</li>
-                    <li><strong>Community Voting:</strong> Vote BUILD 👍 or DEMOLISH 👎 on proposals from your neighbors.</li>
+                    <li><strong>Community Voting:</strong> Vote BUILD or DEMOLISH on proposals from your neighbors.</li>
                     <li><strong>Grassroots Funding:</strong> Contribute directly to projects you believe in, like a neighborhood GoFundMe.</li>
                     <li><strong>Transparent Process:</strong> All proposals are public. See what your neighbors are proposing and add your voice.</li>
                 </ul>
@@ -2716,10 +2836,19 @@
             <div class="content-section">
                 <h2>2025 Meeting Minutes</h2>
                 <div style="background: white; border: 3px solid #999; padding: 15px; margin-bottom: 15px;">
-                    <h3 style="color: #003366; margin: 0 0 5px 0;">December 4th, 2025 - Final Review</h3>
+                    <div style="text-align: center; margin-bottom: 15px;">
+                        <embed src="hyperimage_Final Review Poster.pdf" type="application/pdf" width="100%" height="600px" style="border: 2px solid #999;">
+                    </div>
+                    <h3 style="color: #003366; margin: 0 0 5px 0;">HPCP Website Launch - Final Review</h3>
                     <p style="margin: 5px 0; font-size: 0.85rem;"><strong>Date:</strong> December 4, 2025</p>
                     <p style="margin: 5px 0; font-size: 0.85rem;"><strong>Topics:</strong> Final Review//Hyperimage</p>
-                    <button class="ad-button" style="margin-top: 10px;">Download PDF</button>
+                    <a href="final-presentation/HPCP_Final Website Presentation_Fall 2025.pdf" download style="text-decoration: none;">
+                        <button class="ad-button" style="margin-top: 10px;">Download Presentation PDF</button>
+                    </a>
+                    <br>
+                    <a href="hyperimage_Final Review Poster.pdf" download style="text-decoration: none;">
+                        <button class="ad-button" style="margin-top: 10px;">Download Poster PDF</button>
+                    </a>
                 </div>
             </div>
 
@@ -2761,7 +2890,7 @@
             <div class="content-section">
                 <h2>How to Use This Site</h2>
                 <p><strong>1. View Community Proposals:</strong> Scroll down on the home page to see active proposals</p>
-                <p><strong>2. Vote on Projects:</strong> Click BUILD 👍 or DEMOLISH 👎 on any proposal</p>
+                <p><strong>2. Vote on Projects:</strong> Click BUILD or DEMOLISH on any proposal</p>
                 <p><strong>3. Contribute Funding:</strong> Click "Contribute" to help fund community projects</p>
                 <p><strong>4. Create Your Own Proposal:</strong> Click "Create Proposal" or "Community Map" to annotate site plans and submit your ideas</p>
             </div>

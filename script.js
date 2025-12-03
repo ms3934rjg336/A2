@@ -144,8 +144,24 @@ function openSlideshow(config = { startImageNum: 236, totalSlides: 27 }, pointId
     for (let i = 0; i < totalSlides; i++) {
         const img = document.createElement('img');
         const imageNum = startImageNum + i;
-        img.src = `images/astoria_Documentation-${String(imageNum).padStart(3, '0')}.jpg`;
+        const imagePath = `images/astoria_Documentation-${String(imageNum).padStart(3, '0')}.jpg`;
+        img.src = imagePath;
         img.alt = `Slide ${i + 1}`;
+
+        // Add error handling for failed image loads
+        img.onerror = function() {
+            console.error(`Failed to load image: ${imagePath}`);
+            this.style.backgroundColor = '#333';
+            this.style.display = 'flex';
+            this.style.alignItems = 'center';
+            this.style.justifyContent = 'center';
+        };
+
+        // Add load success logging
+        img.onload = function() {
+            console.log(`Successfully loaded: ${imagePath}`);
+        };
+
         slideshowImages.appendChild(img);
     }
 
@@ -511,6 +527,7 @@ function initializeTemplateDragDrop() {
     templateIcons.forEach(icon => {
         icon.addEventListener('dragstart', (e) => {
             e.dataTransfer.setData('template', e.target.getAttribute('data-template'));
+            e.dataTransfer.setData('iconSrc', e.target.getAttribute('data-icon-src'));
             e.dataTransfer.effectAllowed = 'copy';
             e.target.style.opacity = '0.5';
         });
@@ -529,33 +546,20 @@ function initializeTemplateDragDrop() {
     slideshowContainer.addEventListener('drop', (e) => {
         e.preventDefault();
         const template = e.dataTransfer.getData('template');
+        const iconSrc = e.dataTransfer.getData('iconSrc');
         if (template) {
             // Get the drop position relative to the slideshow container
             const rect = slideshowContainer.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
-            createTemplateIcon(template, x, y);
+            createTemplateIcon(iconSrc, x, y);
         }
     });
 }
 
-function createTemplateIcon(template, x, y) {
+function createTemplateIcon(iconSrc, x, y) {
     const container = document.getElementById('slideshow-container');
-    const templates = {
-        bench: '🪑',
-        swing: '🎠',
-        trash: '🗑️',
-        slide: '🛝',
-        shelter: '🚏',
-        recycle: '♻️',
-        compost: '🌱',
-        garden: '🌻',
-        light: '💡',
-        fountain: '⛲',
-        bike: '🚲',
-        tree: '🌳'
-    };
 
     const iconDiv = document.createElement('div');
     iconDiv.className = 'template-icon-instance';
@@ -563,16 +567,21 @@ function createTemplateIcon(template, x, y) {
     iconDiv.style.left = x + 'px';
     iconDiv.style.top = y + 'px';
     iconDiv.style.transform = 'translate(-50%, -50%)';
-    iconDiv.style.fontSize = '4rem';
     iconDiv.style.background = 'transparent';
     iconDiv.style.cursor = 'grab';
     iconDiv.style.userSelect = 'none';
+    iconDiv.style.pointerEvents = 'auto';
     iconDiv.dataset.scale = '1';
+    iconDiv.dataset.iconSrc = iconSrc;
 
-    const iconSpan = document.createElement('span');
-    iconSpan.textContent = templates[template] || '?';
-    iconSpan.style.display = 'block';
-    iconDiv.appendChild(iconSpan);
+    const iconImg = document.createElement('img');
+    iconImg.src = iconSrc;
+    iconImg.style.width = '80px';
+    iconImg.style.height = '80px';
+    iconImg.style.objectFit = 'contain';
+    iconImg.style.display = 'block';
+    iconImg.style.pointerEvents = 'none';
+    iconDiv.appendChild(iconImg);
 
     // Delete button
     const deleteBtn = document.createElement('button');
@@ -611,7 +620,7 @@ function createTemplateIcon(template, x, y) {
             const deltaY = startY - e.clientY;
             const newScale = Math.max(0.5, Math.min(3, startScale + deltaY / 100));
             iconDiv.dataset.scale = newScale;
-            iconSpan.style.transform = `scale(${newScale})`;
+            iconImg.style.transform = `scale(${newScale})`;
         }
     });
 
@@ -659,23 +668,48 @@ function saveAnnotationsForSlide() {
     const canvasData = hasDrawing ? drawingCanvas.toDataURL() : null;
 
     // Save sticky notes
+    // Save sticky notes with percentage-based positions
     const stickyNotes = Array.from(container.querySelectorAll('.sticky-note')).map(note => {
+        // Get container dimensions
+        const containerWidth = container.offsetWidth;
+        const containerHeight = container.offsetHeight;
+
+        // Get pixel positions
+        const leftPx = parseFloat(note.style.left);
+        const topPx = parseFloat(note.style.top);
+
+        // Convert to percentages
+        const leftPercent = (leftPx / containerWidth) * 100;
+        const topPercent = (topPx / containerHeight) * 100;
+
         return {
-            left: note.style.left,
-            top: note.style.top,
+            left: leftPercent + '%',
+            top: topPercent + '%',
             transform: note.style.transform,
             text: note.querySelector('textarea').value
         };
     });
 
-    // Save template icons
+    // Save template icons with percentage-based positions
     const templateIcons = Array.from(container.querySelectorAll('.template-icon-instance')).map(icon => {
+        // Get container dimensions
+        const containerWidth = container.offsetWidth;
+        const containerHeight = container.offsetHeight;
+
+        // Get pixel positions
+        const leftPx = parseFloat(icon.style.left);
+        const topPx = parseFloat(icon.style.top);
+
+        // Convert to percentages
+        const leftPercent = (leftPx / containerWidth) * 100;
+        const topPercent = (topPx / containerHeight) * 100;
+
         return {
-            left: icon.style.left,
-            top: icon.style.top,
+            left: leftPercent + '%',
+            top: topPercent + '%',
             transform: icon.style.transform,
             scale: icon.dataset.scale,
-            emoji: icon.querySelector('span').textContent
+            iconSrc: icon.dataset.iconSrc
         };
     });
 
@@ -753,16 +787,20 @@ function loadAnnotationsForSlide(slideIndex) {
                 iconDiv.style.left = iconData.left;
                 iconDiv.style.top = iconData.top;
                 iconDiv.style.transform = iconData.transform;
-                iconDiv.style.fontSize = '4rem';
                 iconDiv.style.background = 'transparent';
                 iconDiv.style.cursor = 'grab';
                 iconDiv.dataset.scale = iconData.scale;
+                iconDiv.dataset.iconSrc = iconData.iconSrc;
 
-                const iconSpan = document.createElement('span');
-                iconSpan.textContent = iconData.emoji;
-                iconSpan.style.display = 'block';
-                iconSpan.style.transform = `scale(${iconData.scale})`;
-                iconDiv.appendChild(iconSpan);
+                const iconImg = document.createElement('img');
+                iconImg.src = iconData.iconSrc;
+                iconImg.style.width = '80px';
+                iconImg.style.height = '80px';
+                iconImg.style.objectFit = 'contain';
+                iconImg.style.display = 'block';
+                iconImg.style.transform = `scale(${iconData.scale})`;
+                iconImg.style.pointerEvents = 'none';
+                iconDiv.appendChild(iconImg);
 
                 const deleteBtn = document.createElement('button');
                 deleteBtn.className = 'delete-sticky';
@@ -867,20 +905,22 @@ function generateSubmissionPreview() {
         // Count annotations
         const hasDrawing = data.canvas !== null && data.canvas !== undefined;
         const noteCount = data.stickyNotes ? data.stickyNotes.length : 0;
+        const iconCount = data.templateIcons ? data.templateIcons.length : 0;
 
         // Create card
         const card = document.createElement('div');
         card.className = 'submission-slide-card';
         card.innerHTML = `
             <div style="position: relative;">
-                <img src="images/astoria_Documentation-${imageNum}.jpg" class="submission-slide-image" alt="Slide ${slideNum}">
-                <canvas class="submission-canvas-overlay" width="${window.innerWidth}" height="${window.innerHeight}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+                <img src="images/astoria_Documentation-${String(imageNum).padStart(3, '0')}.jpg" class="submission-slide-image" alt="Slide ${slideNum}">
+                <div class="submission-overlay-container" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></div>
             </div>
             <div class="submission-slide-info">
                 <div class="submission-slide-title">Slide ${slideNum} of ${totalSlides}</div>
                 <div class="submission-slide-meta">
-                    ${hasDrawing ? '<span class="submission-badge badge-drawing">✏️ Drawings</span>' : ''}
-                    ${noteCount > 0 ? `<span class="submission-badge badge-notes">📝 ${noteCount} Note${noteCount > 1 ? 's' : ''}</span>` : ''}
+                    ${hasDrawing ? '<span class="submission-badge badge-drawing">Drawings</span>' : ''}
+                    ${noteCount > 0 ? `<span class="submission-badge badge-notes">${noteCount} Note${noteCount > 1 ? 's' : ''}</span>` : ''}
+                    ${iconCount > 0 ? `<span class="submission-badge badge-icons">${iconCount} Icon${iconCount > 1 ? 's' : ''}</span>` : ''}
                 </div>
                 <div class="slide-comment-section">
                     <div class="slide-comment-label">Comments for Developer:</div>
@@ -900,16 +940,75 @@ function generateSubmissionPreview() {
             }
         });
 
-        // Draw annotations on the preview canvas
-        if (hasDrawing) {
-            const canvas = card.querySelector('.submission-canvas-overlay');
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            img.onload = () => {
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            };
-            img.src = data.canvas;
-        }
+        // Render annotations in overlay - wait for image to load for proper sizing
+        setTimeout(() => {
+            const overlayContainer = card.querySelector('.submission-overlay-container');
+            if (!overlayContainer) return;
+
+            // Draw canvas layer if exists
+            if (hasDrawing) {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = overlayContainer.offsetWidth;
+                    canvas.height = overlayContainer.offsetHeight;
+                    canvas.style.position = 'absolute';
+                    canvas.style.top = '0';
+                    canvas.style.left = '0';
+                    canvas.style.width = '100%';
+                    canvas.style.height = '100%';
+                    canvas.style.pointerEvents = 'none';
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    overlayContainer.appendChild(canvas);
+                };
+                img.src = data.canvas;
+            }
+
+            // Render template icons if they exist
+            if (data.templateIcons && data.templateIcons.length > 0) {
+                data.templateIcons.forEach(iconData => {
+                    const iconDiv = document.createElement('div');
+                    iconDiv.style.position = 'absolute';
+                    iconDiv.style.left = iconData.left;
+                    iconDiv.style.top = iconData.top;
+                    iconDiv.style.pointerEvents = 'none';
+                    iconDiv.style.zIndex = '999';
+                    iconDiv.style.transform = 'translate(-50%, -50%)'; // Center icon on position
+
+                    const iconImg = document.createElement('img');
+                    iconImg.src = iconData.iconSrc;
+                    iconImg.style.width = '40px';
+                    iconImg.style.height = '40px';
+                    iconImg.style.objectFit = 'contain';
+                    iconImg.style.transform = `scale(${iconData.scale || 1})`;
+                    iconDiv.appendChild(iconImg);
+
+                    overlayContainer.appendChild(iconDiv);
+                });
+            }
+
+            // Render sticky notes if they exist
+            if (data.stickyNotes && data.stickyNotes.length > 0) {
+                data.stickyNotes.forEach(noteData => {
+                    const noteDiv = document.createElement('div');
+                    noteDiv.style.position = 'absolute';
+                    noteDiv.style.left = noteData.left;
+                    noteDiv.style.top = noteData.top;
+                    noteDiv.style.background = '#FFFFCC';
+                    noteDiv.style.padding = '5px';
+                    noteDiv.style.border = '2px solid #999';
+                    noteDiv.style.fontSize = '0.7rem';
+                    noteDiv.style.maxWidth = '100px';
+                    noteDiv.style.pointerEvents = 'none';
+                    noteDiv.style.overflow = 'hidden';
+                    noteDiv.style.zIndex = '998';
+                    noteDiv.style.transform = 'translate(-50%, -50%)'; // Center note on position
+                    noteDiv.textContent = noteData.text;
+                    overlayContainer.appendChild(noteDiv);
+                });
+            }
+        }, 100);
     });
 }
 
@@ -922,7 +1021,7 @@ function downloadSubmission() {
     // Get all annotated slides
     const annotatedSlides = Object.keys(annotationsData).filter(slideIndex => {
         const data = annotationsData[slideIndex];
-        return data && (data.canvas || (data.stickyNotes && data.stickyNotes.length > 0));
+        return data && (data.canvas || (data.stickyNotes && data.stickyNotes.length > 0) || (data.templateIcons && data.templateIcons.length > 0));
     });
 
     if (annotatedSlides.length === 0) {
@@ -948,11 +1047,11 @@ function downloadSubmission() {
         summary += '-'.repeat(50) + '\n';
 
         if (data.canvas) {
-            summary += '✏️ Contains drawings\n';
+            summary += 'Contains drawings\n';
         }
 
         if (data.stickyNotes && data.stickyNotes.length > 0) {
-            summary += `📝 ${data.stickyNotes.length} Sticky Note(s):\n`;
+            summary += `${data.stickyNotes.length} Sticky Note(s):\n`;
             data.stickyNotes.forEach((note, idx) => {
                 summary += `  ${idx + 1}. ${note.text || '(empty note)'}\n`;
             });
@@ -988,7 +1087,7 @@ function submitToCommunity() {
     // Get all annotated slides
     const annotatedSlides = Object.keys(annotationsData).filter(slideIndex => {
         const data = annotationsData[slideIndex];
-        return data && (data.canvas || (data.stickyNotes && data.stickyNotes.length > 0));
+        return data && (data.canvas || (data.stickyNotes && data.stickyNotes.length > 0) || (data.templateIcons && data.templateIcons.length > 0));
     });
 
     if (annotatedSlides.length === 0) {
@@ -1139,63 +1238,97 @@ function createProposalImagePreview(proposal) {
         return '';
     }
 
-    // Get the first annotated slide
-    const firstSlideKey = Object.keys(proposal.annotations)[0];
-    const firstAnnotation = proposal.annotations[firstSlideKey];
-
-    // Determine the image number from selectedSlide (point ID) and slide index
+    // Get FIRST annotated slide only
+    const firstSlideKey = Object.keys(proposal.annotations).sort((a, b) => parseInt(a) - parseInt(b))[0];
     const pointId = proposal.selectedSlide;
-    const slideIndex = parseInt(firstSlideKey);
-
-    console.log('Creating preview for proposal:', proposal.id, 'pointId:', pointId, 'slideIndex:', slideIndex);
-
-    // Get the point configuration to calculate image number
     const config = pointImageRanges[pointId];
+
     if (!config) {
-        console.warn('No config found for pointId:', pointId, 'Available configs:', Object.keys(pointImageRanges));
-        return ''; // No config found, skip preview
+        console.warn('No config found for pointId:', pointId);
+        return '';
     }
 
+    const slideIndex = parseInt(firstSlideKey);
     const imageNum = config.startImageNum + slideIndex;
     const imagePath = `images/astoria_Documentation-${String(imageNum).padStart(3, '0')}.jpg`;
+    const annotation = proposal.annotations[firstSlideKey];
 
-    console.log('Image path:', imagePath, 'Has canvas annotation:', !!firstAnnotation.canvas);
+    // Render template icons HTML
+    let iconsHTML = '';
+    if (annotation.templateIcons && annotation.templateIcons.length > 0) {
+        iconsHTML = annotation.templateIcons.map(iconData =>
+            `<div style="position: absolute; left: ${iconData.left}; top: ${iconData.top}; transform: translate(-50%, -50%); pointer-events: none; z-index: 999;">
+                <img src="${iconData.iconSrc}" style="width: 30px; height: 30px; object-fit: contain; transform: scale(${iconData.scale || 1});">
+            </div>`
+        ).join('');
+    }
+
+    // Render sticky notes HTML
+    let notesHTML = '';
+    if (annotation.stickyNotes && annotation.stickyNotes.length > 0) {
+        notesHTML = annotation.stickyNotes.map(noteData =>
+            `<div style="position: absolute; left: ${noteData.left}; top: ${noteData.top}; transform: translate(-50%, -50%); background: #FFFFCC; padding: 3px; border: 1px solid #999; font-size: 0.5rem; max-width: 60px; pointer-events: none; overflow: hidden; z-index: 998;">${noteData.text}</div>`
+        ).join('');
+    }
 
     return `
         <div style="margin: 12px 0; padding: 10px; background: #f5f5f5; border: 2px solid #999; border-style: inset;">
-            <div class="proposal-preview-container" onclick="expandProposalPreview('${imagePath}', '${firstAnnotation.canvas || ''}', ${proposal.id})"
-                 style="position: relative; width: 100%; max-width: 400px; margin: 0 auto; aspect-ratio: 4/3; border: 2px solid #666; border-style: outset; overflow: hidden; background: #000; cursor: pointer;">
-                <img src="${imagePath}"
-                     style="width: 100%; height: 100%; object-fit: contain;"
-                     alt="Proposal preview"
-                     onerror="console.error('Failed to load image:', this.src)">
-                ${firstAnnotation.canvas ? `<img src="${firstAnnotation.canvas}"
-                     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;"
-                     onerror="console.error('Failed to load canvas annotation')">` : ''}
-                <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 3px; font-size: 0.7rem; font-family: Verdana, Arial, sans-serif;">Click to expand</div>
+            <div style="position: relative; width: 100%; max-width: 400px; margin: 0 auto;">
+                <div class="proposal-preview-image"
+                     data-image-path="${imagePath}"
+                     data-canvas-url="${annotation.canvas || ''}"
+                     data-proposal-id="${proposal.id}"
+                     data-annotation='${JSON.stringify(annotation).replace(/'/g, '&apos;').replace(/"/g, '&quot;')}'
+                     style="position: relative; aspect-ratio: 4/3; border: 2px solid #666; border-style: outset; overflow: hidden; background: #000; cursor: pointer;">
+                    <img src="${imagePath}" style="width: 100%; height: 100%; object-fit: contain;" alt="Slide ${slideIndex + 1}">
+                    ${annotation.canvas ? `<img src="${annotation.canvas}" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;">` : ''}
+                    ${iconsHTML}
+                    ${notesHTML}
+                    <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 3px; font-size: 0.7rem; font-family: Verdana, Arial, sans-serif;">Click to expand</div>
+                </div>
             </div>
-            <p style="font-size: 0.75rem; color: #666; text-align: center; margin: 8px 0 0 0; font-family: Verdana, Arial, sans-serif;">Preview of annotated proposal (Slide ${slideIndex + 1})</p>
         </div>
     `;
 }
 
 // Expand proposal preview in modal
-function expandProposalPreview(imagePath, canvasDataUrl, proposalId) {
-    // Create modal
+function expandProposalPreview(imagePath, canvasDataUrl, proposalId, annotationData) {
+    // Create full-screen modal
     const modal = document.createElement('div');
     modal.className = 'login-modal active';
     modal.style.zIndex = '10000';
+
+    // Render template icons HTML
+    let iconsHTML = '';
+    if (annotationData && annotationData.templateIcons && annotationData.templateIcons.length > 0) {
+        iconsHTML = annotationData.templateIcons.map(iconData =>
+            `<div style="position: absolute; left: ${iconData.left}; top: ${iconData.top}; transform: translate(-50%, -50%); pointer-events: none; z-index: 999;">
+                <img src="${iconData.iconSrc}" style="width: 80px; height: 80px; object-fit: contain; transform: scale(${iconData.scale || 1});">
+            </div>`
+        ).join('');
+    }
+
+    // Render sticky notes HTML
+    let notesHTML = '';
+    if (annotationData && annotationData.stickyNotes && annotationData.stickyNotes.length > 0) {
+        notesHTML = annotationData.stickyNotes.map(noteData =>
+            `<div style="position: absolute; left: ${noteData.left}; top: ${noteData.top}; transform: translate(-50%, -50%); background: #FFFFCC; padding: 8px; border: 2px solid #999; font-size: 1rem; max-width: 150px; pointer-events: none; z-index: 998; white-space: pre-wrap;">${noteData.text}</div>`
+        ).join('');
+    }
+
     modal.innerHTML = `
-        <div class="login-box" style="max-width: 90vw; max-height: 90vh; padding: 20px;">
-            <div style="position: relative; width: 100%; height: 80vh;">
+        <div class="login-box" style="max-width: 95vw; max-height: 95vh; width: 95vw; height: 95vh; padding: 10px; display: flex; flex-direction: column;">
+            <div style="position: relative; flex: 1; overflow: hidden; background: #000;">
                 <img src="${imagePath}"
                      style="width: 100%; height: 100%; object-fit: contain;"
                      alt="Proposal full view">
                 ${canvasDataUrl ? `<img src="${canvasDataUrl}"
                      style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;">` : ''}
+                ${iconsHTML}
+                ${notesHTML}
             </div>
             <button onclick="this.closest('.login-modal').remove()"
-                    style="margin-top: 15px; padding: 10px 20px; background: #D3D3D3; border: 2px outset #999; cursor: pointer; font-family: Verdana, Arial, sans-serif; font-weight: bold; width: 100%;">Close</button>
+                    style="margin-top: 10px; padding: 10px 20px; background: #D3D3D3; border: 2px outset #999; cursor: pointer; font-family: Verdana, Arial, sans-serif; font-weight: bold;">Close</button>
         </div>
     `;
 
@@ -1205,6 +1338,15 @@ function expandProposalPreview(imagePath, canvasDataUrl, proposalId) {
             modal.remove();
         }
     });
+
+    // Close on ESC key
+    const escHandler = (e) => {
+        if (e.key === 'Escape') {
+            modal.remove();
+            document.removeEventListener('keydown', escHandler);
+        }
+    };
+    document.addEventListener('keydown', escHandler);
 
     document.body.appendChild(modal);
 }
@@ -1240,13 +1382,13 @@ function createProposalCard(proposal) {
                     <span class="funding-raised">$${proposal.funding.raised.toLocaleString()} raised of $${proposal.budget.toLocaleString()}</span>
                     <span class="funding-backers">${proposal.funding.backers} ${proposal.funding.backers === 1 ? 'backer' : 'backers'}</span>
                 </div>
-                <button class="contribute-btn" data-proposal-id="${proposal.id}">💰 Contribute to this Project</button>
+                <button class="contribute-btn" data-proposal-id="${proposal.id}">Contribute to this Project</button>
             </div>
 
             <div class="voting-section">
                 <div class="vote-group">
                     <button class="vote-btn vote-build" data-proposal-id="${proposal.id}" data-vote-type="build">
-                        👍 BUILD
+                        BUILD
                     </button>
                     <span class="vote-count">${proposal.votes.build}</span>
                     <span class="vote-label">Votes</span>
@@ -1256,7 +1398,7 @@ function createProposalCard(proposal) {
                 </div>
                 <div class="vote-group">
                     <button class="vote-btn vote-demolish" data-proposal-id="${proposal.id}" data-vote-type="demolish">
-                        👎 DEMOLISH
+                        DEMOLISH
                     </button>
                     <span class="vote-count">${proposal.votes.demolish}</span>
                     <span class="vote-label">Votes</span>
@@ -1324,40 +1466,66 @@ function handleContribution(e) {
     }
 
     const proposalId = parseInt(e.currentTarget.getAttribute('data-proposal-id'));
+    console.log('handleContribution called for proposal ID:', proposalId);
 
     const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
-    const proposalIndex = proposals.findIndex(p => p.id === proposalId);
+    console.log('Total proposals loaded:', proposals.length);
 
-    if (proposalIndex === -1) return;
+    const proposalIndex = proposals.findIndex(p => p.id === proposalId);
+    console.log('Proposal index found:', proposalIndex);
+
+    if (proposalIndex === -1) {
+        console.error('Proposal not found!');
+        return;
+    }
 
     const proposal = proposals[proposalIndex];
+    console.log('Current proposal funding:', proposal.funding);
 
     // Show contribution modal
     showContributionModal(proposal, (amount) => {
+        console.log('Contribution callback triggered with amount:', amount);
+        console.log('Before contribution - Raised:', proposals[proposalIndex].funding.raised);
+
         // Add contribution
         proposals[proposalIndex].funding.raised += amount;
         proposals[proposalIndex].funding.backers++;
 
+        console.log('After contribution - Raised:', proposals[proposalIndex].funding.raised);
+        console.log('After contribution - Backers:', proposals[proposalIndex].funding.backers);
+
         // Save back to localStorage
         localStorage.setItem('communityProposals', JSON.stringify(proposals));
+        console.log('Saved to localStorage');
 
-        // Reload proposals on homepage
-        loadProposals();
+        // Verify save
+        const savedProposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
+        const savedProposal = savedProposals.find(p => p.id === proposalId);
+        console.log('Verified saved proposal funding:', savedProposal?.funding);
 
-        // Also reload if on browse page (refresh the badges)
-        const browsePage = document.getElementById('browse-proposals-page');
-        if (browsePage && browsePage.style.display === 'block') {
-            loadProposalBadges();
-        }
+        // Use setTimeout to ensure DOM updates after save completes
+        setTimeout(() => {
+            // Reload proposals on homepage
+            loadProposals();
+            console.log('Reloaded proposals on homepage');
 
-        // Reload zone modal if it's open
-        const zoneModal = document.getElementById('zone-proposals-modal');
-        if (zoneModal && zoneModal.classList.contains('active')) {
-            // Re-render the proposals in the modal
-            const zoneId = proposal.selectedSlide;
-            const zoneName = zonePositions.find(z => z.id === zoneId)?.name || 'Zone';
-            showZoneProposals(zoneId, zoneName);
-        }
+            // Also reload if on browse page (refresh the badges)
+            const browsePage = document.getElementById('browse-proposals-page');
+            if (browsePage && browsePage.style.display === 'block') {
+                loadProposalBadges();
+                console.log('Reloaded badges on browse page');
+            }
+
+            // Reload zone modal if it's open
+            const zoneModal = document.getElementById('zone-proposals-modal');
+            if (zoneModal && zoneModal.classList.contains('active')) {
+                // Re-render the proposals in the modal
+                const zoneId = proposal.selectedSlide;
+                const zoneName = zonePositions.find(z => z.id === zoneId)?.name || 'Zone';
+                showZoneProposals(zoneId, zoneName);
+                console.log('Reloaded zone modal');
+            }
+        }, 100);
     });
 }
 
@@ -1764,7 +1932,7 @@ function showVoteModal(proposal, voteType, callback) {
     currentVoteCallback = callback;
 
     const modal = document.getElementById('vote-modal');
-    const voteLabel = voteType === 'build' ? 'BUILD 👍' : 'DEMOLISH 👎';
+    const voteLabel = voteType === 'build' ? 'BUILD' : 'DEMOLISH';
 
     // Set title and question
     document.getElementById('vote-modal-title').textContent = proposal.title;
@@ -1903,8 +2071,8 @@ function showPaymentModal(amount) {
     // Reset form
     document.getElementById('payment-form').reset();
 
-    // Hide contribution modal
-    hideContributionModal();
+    // Hide contribution modal (but don't clear the callback!)
+    document.getElementById('contribution-modal').classList.remove('active');
 
     // Show payment modal
     modal.classList.add('active');
@@ -1945,15 +2113,24 @@ document.getElementById('billing-zip').addEventListener('input', (e) => {
 document.getElementById('payment-form').addEventListener('submit', (e) => {
     e.preventDefault();
 
+    console.log('Payment form submitted with amount:', currentPaymentAmount);
+
     // Process payment (fake)
     if (currentContributionCallback) {
+        console.log('Calling contribution callback');
         currentContributionCallback(currentPaymentAmount);
+        // Clear callback after use
+        currentContributionCallback = null;
+    } else {
+        console.error('No contribution callback found!');
     }
 
     hidePaymentModal();
 
-    // Show success message
-    customAlert(`Thank you for contributing $${currentPaymentAmount.toLocaleString()}!`, 'Payment Successful!');
+    // Show success message AFTER reload completes
+    setTimeout(() => {
+        customAlert(`Thank you for contributing $${currentPaymentAmount.toLocaleString()}!`, 'Payment Successful!');
+    }, 200);
 });
 
 document.getElementById('payment-cancel').addEventListener('click', () => {
@@ -2205,3 +2382,29 @@ document.querySelectorAll('.template-btn').forEach(btn => {
         }
     });
 });
+
+// ===== ADMIN FUNCTION TO CLEAR ALL PROPOSALS =====
+// Run this in browser console: clearAllProposals()
+window.clearAllProposals = function() {
+    if (confirm('Are you sure you want to delete ALL community proposals? This cannot be undone!')) {
+        localStorage.removeItem('communityProposals');
+        console.log('All proposals cleared from localStorage');
+
+        // Reload the page to show empty state
+        loadProposals();
+
+        // Also reload if on browse page
+        const browsePage = document.getElementById('browse-proposals-page');
+        if (browsePage && browsePage.style.display === 'block') {
+            loadProposalBadges();
+        }
+
+        // Close zone modal if open
+        const zoneModal = document.getElementById('zone-proposals-modal');
+        if (zoneModal && zoneModal.classList.contains('active')) {
+            zoneModal.classList.remove('active');
+        }
+
+        alert('All proposals have been cleared!');
+    }
+};
