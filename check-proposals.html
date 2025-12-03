@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Proposals</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        h1 {
+            color: #4ec9b0;
+        }
+        pre {
+            background: #252526;
+            padding: 20px;
+            border-radius: 5px;
+            overflow: auto;
+        }
+        .error { color: #f48771; }
+        .success { color: #4ec9b0; }
+        .warning { color: #dcdcaa; }
+        button {
+            padding: 10px 20px;
+            margin: 10px 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Check Proposals in localStorage</h1>
+    <button onclick="checkProposals()">Refresh Check</button>
+    <button onclick="clearAll()">Clear All Proposals</button>
+    <pre id="output">Click "Refresh Check" to analyze proposals...</pre>
+
+    <script>
+        function checkProposals() {
+            const output = document.getElementById('output');
+            const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
+
+            const validPoints = ['point1', 'point2', 'point3', 'point4', 'point5', 'point6', 'point7',
+                                'point8', 'point9', 'point10', 'point11', 'point12', 'point13', 'point14', 'point15'];
+
+            let result = `Total proposals: ${proposals.length}\n\n`;
+
+            if (proposals.length === 0) {
+                result += '<span class="success">✓ No proposals found in localStorage.</span>\n';
+                output.innerHTML = result;
+                return;
+            }
+
+            let hasErrors = false;
+
+            proposals.forEach((p, index) => {
+                result += `Proposal ${index + 1}:\n`;
+                result += `  ID: ${p.id}\n`;
+                result += `  Title: ${p.title}\n`;
+                result += `  Selected Slide: ${p.selectedSlide}\n`;
+
+                if (!validPoints.includes(p.selectedSlide)) {
+                    result += `  <span class="error">❌ ERROR: Invalid selectedSlide value!</span>\n`;
+                    result += `  <span class="warning">   This proposal will show "No config found" warning</span>\n`;
+                    hasErrors = true;
+                } else {
+                    result += `  <span class="success">✓ Valid point configuration</span>\n`;
+                }
+
+                result += `  Date: ${p.date}\n`;
+                result += `  Annotations: ${Object.keys(p.annotations || {}).length} slides\n\n`;
+            });
+
+            if (hasErrors) {
+                result += '\n<span class="error">⚠️ FOUND PROPOSALS WITH INVALID POINT IDs</span>\n';
+                result += '<span class="warning">Recommendation: Clear all proposals or manually fix in localStorage</span>\n';
+            } else {
+                result += '\n<span class="success">✓ All proposals have valid point configurations</span>\n';
+            }
+
+            output.innerHTML = result;
+        }
+
+        function clearAll() {
+            if (confirm('Are you sure you want to delete ALL proposals?')) {
+                localStorage.removeItem('communityProposals');
+                alert('All proposals cleared!');
+                checkProposals();
+            }
+        }
+
+        // Auto-run on load
+        checkProposals();
+    </script>
+</body>
+</html>

@@ -1,13 +1,20 @@
 // ===== POINT IMAGE RANGE CONFIGURATION =====
 const pointImageRanges = {
+    point1: { startImageNum: 8, totalSlides: 20 },    // Images 8-27
     point2: { startImageNum: 180, totalSlides: 42 },  // Images 180-221
     point3: { startImageNum: 90, totalSlides: 26 },   // Images 90-115
     point4: { startImageNum: 62, totalSlides: 28 },   // Images 62-89
+    point5: { startImageNum: 54, totalSlides: 8 },    // Images 54-61
+    point6: { startImageNum: 116, totalSlides: 32 },  // Images 116-147
+    point7: { startImageNum: 148, totalSlides: 32 },  // Images 148-179
     point8: { startImageNum: 300, totalSlides: 7 },   // Images 300-306
+    point9: { startImageNum: 222, totalSlides: 14 },  // Images 222-235
     point10: { startImageNum: 263, totalSlides: 25 }, // Images 263-287
     point11: { startImageNum: 236, totalSlides: 27 }, // Images 236-262
+    point12: { startImageNum: 288, totalSlides: 12 }, // Images 288-299
     point13: { startImageNum: 28, totalSlides: 26 },  // Images 28-53
-    point14: { startImageNum: 1, totalSlides: 7 }     // Images 001-007
+    point14: { startImageNum: 1, totalSlides: 7 },    // Images 001-007
+    point15: { startImageNum: 1, totalSlides: 7 }     // Images 001-007 (reuse for now)
 };
 
 // Preload all images to prevent white flash
@@ -145,21 +152,24 @@ function openSlideshow(config = { startImageNum: 236, totalSlides: 27 }, pointId
         const img = document.createElement('img');
         const imageNum = startImageNum + i;
         const imagePath = `images/astoria_Documentation-${String(imageNum).padStart(3, '0')}.jpg`;
+
+        // Set loading background
+        img.style.backgroundColor = '#1a1a1a';
+
         img.src = imagePath;
         img.alt = `Slide ${i + 1}`;
 
         // Add error handling for failed image loads
         img.onerror = function() {
-            console.error(`Failed to load image: ${imagePath}`);
-            this.style.backgroundColor = '#333';
-            this.style.display = 'flex';
-            this.style.alignItems = 'center';
-            this.style.justifyContent = 'center';
+            console.error(`❌ FAILED to load image: ${imagePath}`);
+            this.style.backgroundColor = '#ff0000';
+            this.style.border = '5px solid yellow';
         };
 
-        // Add load success logging
+        // Add load success logging and remove background
         img.onload = function() {
-            console.log(`Successfully loaded: ${imagePath}`);
+            console.log(`✓ Successfully loaded: ${imagePath}`);
+            this.style.backgroundColor = 'transparent';
         };
 
         slideshowImages.appendChild(img);
@@ -1244,8 +1254,27 @@ function createProposalImagePreview(proposal) {
     const config = pointImageRanges[pointId];
 
     if (!config) {
-        console.warn('No config found for pointId:', pointId);
-        return '';
+        console.error('❌ No config found for pointId:', pointId);
+        console.error('   Proposal ID:', proposal.id);
+        console.error('   Proposal Title:', proposal.title);
+        console.error('   Available point configs:', Object.keys(pointImageRanges).join(', '));
+        console.error('   This proposal was likely created before all points were configured.');
+        console.error('   Solution: Open check-proposals.html to view and clear invalid proposals.');
+
+        // Return a placeholder with error message instead of empty
+        return `
+            <div style="margin: 12px 0; padding: 20px; background: #fff3cd; border: 3px solid #ffc107; border-style: outset;">
+                <div style="color: #856404; font-family: Verdana, Arial, sans-serif;">
+                    <strong>⚠️ Configuration Error</strong>
+                    <p style="margin: 10px 0; font-size: 0.9rem;">This proposal has an invalid zone configuration (${pointId}).
+                    It was likely created before all zones were configured.</p>
+                    <p style="margin: 10px 0; font-size: 0.85rem;">
+                        <strong>To fix:</strong> Open <code>check-proposals.html</code> to view and clear invalid proposals,
+                        or use <code>clearAllProposals()</code> in the browser console.
+                    </p>
+                </div>
+            </div>
+        `;
     }
 
     const slideIndex = parseInt(firstSlideKey);
