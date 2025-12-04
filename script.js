@@ -296,6 +296,7 @@ function initializeCanvas() {
 }
 
 function initializeAnnotationTools() {
+    const cursorTool = document.getElementById('cursor-tool');
     const penTool = document.getElementById('pen-tool');
     const eraserTool = document.getElementById('eraser-tool');
     const stickyTool = document.getElementById('sticky-tool');
@@ -303,6 +304,13 @@ function initializeAnnotationTools() {
 
     const penOptions = document.getElementById('pen-options');
     const eraserOptions = document.getElementById('eraser-options');
+
+    // Cursor tool handler - allows selecting and moving quick add items
+    cursorTool.addEventListener('click', () => {
+        currentTool = null; // No drawing tool active
+        activateTool(cursorTool, null);
+        drawingCanvas.style.pointerEvents = 'none'; // Disable canvas drawing, allow interaction with items
+    });
 
     // Tool button handlers
     penTool.addEventListener('click', () => {
@@ -1196,23 +1204,33 @@ function submitToCommunity() {
             document.getElementById('reference-photos').value = '';
             document.getElementById('photo-preview').innerHTML = '';
 
+            // Close submission and slideshow pages
             closeSubmissionPage();
             closeSlideshow();
 
-            // Go back to homepage properly
+            // Hide all slideshow-related elements
             document.getElementById('slideshow3').style.display = 'none';
             document.getElementById('overlay').style.display = 'none';
             document.getElementById('slideshow3').classList.remove('active');
             document.getElementById('overlay').classList.remove('active');
+            document.getElementById('slideshow-page').style.display = 'none';
+            document.getElementById('submission-page').style.display = 'none';
 
+            // Hide all clickable points
             document.querySelectorAll('.clickable-point').forEach(point => {
                 point.style.display = 'none';
                 point.classList.remove('animation-active');
             });
             document.getElementById('cursor-demo').classList.remove('active');
 
-            document.querySelector('main').classList.remove('hidden');
-            document.querySelector('header').classList.remove('hidden');
+            // Show main content and header
+            const main = document.querySelector('main');
+            const header = document.querySelector('header');
+            main.classList.remove('hidden');
+            header.classList.remove('hidden');
+            main.style.display = '';
+            header.style.display = '';
+
             hideBackToMenuButton();
 
             // Reload proposals on landing page
