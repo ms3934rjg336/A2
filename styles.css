@@ -20,6 +20,10 @@ body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
 }
 
 #landing {
@@ -54,6 +58,7 @@ body {
 #slideshow3 {
     z-index: 2;
     opacity: 0;
+    will-change: opacity, background-image;
     /* Animation will be triggered by JavaScript */
 }
 
@@ -61,6 +66,7 @@ body {
     z-index: 3;
     opacity: 0;
     background-size: cover;
+    will-change: opacity;
     /* Animation will be triggered by JavaScript */
 }
 
@@ -78,11 +84,11 @@ body {
 }
 
 #slideshow3.active {
-    animation: slideshow3AnimDirect 2s ease-in-out forwards;
+    animation: slideshow3AnimDirect 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 #overlay.active {
-    animation: blinkOverlay 0.5s ease-in-out 2s infinite;
+    animation: blinkOverlay 0.5s ease-in-out 3s infinite;
 }
 
 .clickable-point {
@@ -342,23 +348,23 @@ body {
         background-image: url('site-walk-path/images/20.jpg');
         opacity: 0;
     }
-    10% {
+    5% {
         background-image: url('site-walk-path/images/20.jpg');
         opacity: 1;
     }
-    40% {
+    33.33% {
         background-image: url('site-walk-path/images/20.jpg');
         opacity: 1;
     }
-    50% {
+    33.34% {
         background-image: url('site-walk-path/images/21.jpg');
         opacity: 1;
     }
-    80% {
+    66.66% {
         background-image: url('site-walk-path/images/21.jpg');
         opacity: 1;
     }
-    90% {
+    66.67% {
         background-image: url('site-walk-path/images/21.5.jpg');
         opacity: 1;
     }

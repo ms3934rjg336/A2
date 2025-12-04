@@ -153,8 +153,9 @@ function openSlideshow(config = { startImageNum: 236, totalSlides: 27 }, pointId
         const imageNum = startImageNum + i;
         const imagePath = `images/astoria_Documentation-${String(imageNum).padStart(3, '0')}.jpg`;
 
-        // Set loading background
-        img.style.backgroundColor = '#1a1a1a';
+        // Force eager loading to ensure all images load
+        img.loading = 'eager';
+        img.decoding = 'auto';
 
         img.src = imagePath;
         img.alt = `Slide ${i + 1}`;
@@ -164,12 +165,12 @@ function openSlideshow(config = { startImageNum: 236, totalSlides: 27 }, pointId
             console.error(`❌ FAILED to load image: ${imagePath}`);
             this.style.backgroundColor = '#ff0000';
             this.style.border = '5px solid yellow';
+            this.alt = `Failed to load: ${imagePath}`;
         };
 
-        // Add load success logging and remove background
+        // Add load success logging
         img.onload = function() {
             console.log(`✓ Successfully loaded: ${imagePath}`);
-            this.style.backgroundColor = 'transparent';
         };
 
         slideshowImages.appendChild(img);
@@ -703,16 +704,24 @@ function saveAnnotationsForSlide() {
     // Save template icons with percentage-based positions
     const templateIcons = Array.from(container.querySelectorAll('.template-icon-instance')).map(icon => {
         // Get container dimensions
-        const containerWidth = container.offsetWidth;
-        const containerHeight = container.offsetHeight;
+        const containerWidth = container.offsetWidth || window.innerWidth;
+        const containerHeight = container.offsetHeight || window.innerHeight;
 
         // Get pixel positions
-        const leftPx = parseFloat(icon.style.left);
-        const topPx = parseFloat(icon.style.top);
+        const leftPx = parseFloat(icon.style.left) || 0;
+        const topPx = parseFloat(icon.style.top) || 0;
 
-        // Convert to percentages
-        const leftPercent = (leftPx / containerWidth) * 100;
-        const topPercent = (topPx / containerHeight) * 100;
+        // Convert to percentages (safeguard against division by zero)
+        const leftPercent = containerWidth > 0 ? (leftPx / containerWidth) * 100 : 50;
+        const topPercent = containerHeight > 0 ? (topPx / containerHeight) * 100 : 50;
+
+        console.log('💾 Icon position:', {
+            leftPx, topPx,
+            containerWidth, containerHeight,
+            leftPercent: leftPercent.toFixed(2) + '%',
+            topPercent: topPercent.toFixed(2) + '%',
+            iconSrc: icon.dataset.iconSrc
+        });
 
         return {
             left: leftPercent + '%',
@@ -722,6 +731,9 @@ function saveAnnotationsForSlide() {
             iconSrc: icon.dataset.iconSrc
         };
     });
+
+    // DEBUG: Log what's being saved
+    console.log('💾 Saving slide', currentSlide, '- Template icons:', templateIcons.length, templateIcons);
 
     // Only save if there's actual content (canvas drawing, sticky notes, or template icons)
     if (canvasData || stickyNotes.length > 0 || templateIcons.length > 0) {
@@ -835,14 +847,16 @@ function clearAllAnnotations() {
     // Clear canvas
     canvasContext.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
 
-    // Remove all sticky notes
+    // Remove all sticky notes and template icons
     const container = document.getElementById('slideshow-container');
     container.querySelectorAll('.sticky-note').forEach(note => note.remove());
+    container.querySelectorAll('.template-icon-instance').forEach(icon => icon.remove());
 
     // Clear from storage
     annotationsData[currentSlide] = {
         canvas: null,
-        stickyNotes: []
+        stickyNotes: [],
+        templateIcons: []
     };
 }
 
@@ -873,12 +887,15 @@ function closeSubmissionPage() {
     const submissionPage = document.getElementById('submission-page');
     const slideshowPage = document.getElementById('slideshow-page');
     const header = document.querySelector('header');
+    const main = document.querySelector('main');
 
     // Hide submission, show slideshow
     submissionPage.style.display = 'none';
     slideshowPage.style.display = 'block';
-    if (header) {
-        header.style.display = 'block';
+
+    // Only show header if we're not in map mode (main content is visible)
+    if (header && !main.classList.contains('hidden')) {
+        header.style.display = 'flex';
     }
 }
 
@@ -889,7 +906,7 @@ function generateSubmissionPreview() {
     // Get all slides that have annotations
     const annotatedSlides = Object.keys(annotationsData).filter(slideIndex => {
         const data = annotationsData[slideIndex];
-        return data && (data.canvas || (data.stickyNotes && data.stickyNotes.length > 0));
+        return data && (data.canvas || (data.stickyNotes && data.stickyNotes.length > 0) || (data.templateIcons && data.templateIcons.length > 0));
     });
 
     if (annotatedSlides.length === 0) {
@@ -897,7 +914,7 @@ function generateSubmissionPreview() {
         grid.innerHTML = `
             <div class="empty-state">
                 <h2>No Annotations Yet</h2>
-                <p>Go back and add drawings or sticky notes to your slides</p>
+                <p>Go back and add drawings, sticky notes, or quick add items to your slides</p>
             </div>
         `;
         return;
@@ -982,9 +999,9 @@ function generateSubmissionPreview() {
                     iconDiv.style.position = 'absolute';
                     iconDiv.style.left = iconData.left;
                     iconDiv.style.top = iconData.top;
+                    iconDiv.style.transform = 'translate(-50%, -50%)';
                     iconDiv.style.pointerEvents = 'none';
                     iconDiv.style.zIndex = '999';
-                    iconDiv.style.transform = 'translate(-50%, -50%)'; // Center icon on position
 
                     const iconImg = document.createElement('img');
                     iconImg.src = iconData.iconSrc;
@@ -1005,6 +1022,7 @@ function generateSubmissionPreview() {
                     noteDiv.style.position = 'absolute';
                     noteDiv.style.left = noteData.left;
                     noteDiv.style.top = noteData.top;
+                    noteDiv.style.transform = 'translate(-50%, -50%)';
                     noteDiv.style.background = '#FFFFCC';
                     noteDiv.style.padding = '5px';
                     noteDiv.style.border = '2px solid #999';
@@ -1013,7 +1031,6 @@ function generateSubmissionPreview() {
                     noteDiv.style.pointerEvents = 'none';
                     noteDiv.style.overflow = 'hidden';
                     noteDiv.style.zIndex = '998';
-                    noteDiv.style.transform = 'translate(-50%, -50%)'; // Center note on position
                     noteDiv.textContent = noteData.text;
                     overlayContainer.appendChild(noteDiv);
                 });
@@ -1035,7 +1052,7 @@ function downloadSubmission() {
     });
 
     if (annotatedSlides.length === 0) {
-        alert('No annotations to download. Please add some drawings or notes first.');
+        alert('No annotations to download. Please add some drawings, notes, or quick add items first.');
         return;
     }
 
@@ -1101,7 +1118,7 @@ function submitToCommunity() {
     });
 
     if (annotatedSlides.length === 0) {
-        alert('No annotations to submit. Please add some drawings or notes first.');
+        alert('No annotations to submit. Please add some drawings, notes, or quick add items first.');
         return;
     }
 
@@ -1210,12 +1227,141 @@ function submitToCommunity() {
 
 // ===== COMMUNITY PROPOSALS FUNCTIONALITY =====
 
+// Diagnostic function to check what's in proposals
+function checkProposalData() {
+    const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
+    console.log('=== PROPOSAL DIAGNOSTIC ===');
+    console.log('Total proposals:', proposals.length);
+
+    proposals.forEach((proposal, index) => {
+        console.log(`\nProposal ${index + 1}:`, proposal.title);
+        console.log('  ID:', proposal.id);
+        console.log('  Annotations:', Object.keys(proposal.annotations || {}).length, 'slides');
+
+        Object.keys(proposal.annotations || {}).forEach(slideKey => {
+            const ann = proposal.annotations[slideKey];
+            console.log(`  Slide ${slideKey}:`);
+            console.log('    - Canvas:', ann.canvas ? 'YES' : 'NO');
+            console.log('    - Sticky notes:', ann.stickyNotes?.length || 0);
+            console.log('    - Template icons:', ann.templateIcons?.length || 0);
+            if (ann.templateIcons && ann.templateIcons.length > 0) {
+                ann.templateIcons.forEach((icon, i) => {
+                    console.log(`      Icon ${i}:`, icon);
+                });
+            }
+        });
+    });
+    console.log('=== END DIAGNOSTIC ===');
+}
+
+// Fix icon paths and positions in existing proposals (migration function)
+function fixIconPathsInProposals() {
+    const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
+    let fixed = false;
+
+    proposals.forEach(proposal => {
+        if (proposal.annotations) {
+            Object.keys(proposal.annotations).forEach(slideKey => {
+                const annotation = proposal.annotations[slideKey];
+                if (annotation.templateIcons && annotation.templateIcons.length > 0) {
+                    annotation.templateIcons.forEach(icon => {
+                        // Fix lowercase archive path
+                        if (icon.iconSrc && icon.iconSrc.startsWith('archive/')) {
+                            console.log('🔧 Fixing path:', icon.iconSrc, '→', icon.iconSrc.replace('archive/', 'Archive/'));
+                            icon.iconSrc = icon.iconSrc.replace('archive/', 'Archive/');
+                            fixed = true;
+                        }
+
+                        // Fix file names with spaces to underscores
+                        const spaceToUnderscore = [
+                            ['swing set.png', 'swing_set.png'],
+                            ['trash bin.png', 'trash_bin.png'],
+                            ['bus stop.png', 'bus_stop.png'],
+                            ['recycling bin.png', 'recycling_bin.png'],
+                            ['composting bin.png', 'composting_bin.png'],
+                            ['community garden.png', 'community_garden.png'],
+                            ['street light.png', 'street_light.png'],
+                            ['street light-01.png', 'street_light.png'],
+                            ['street light-02.png', 'street_light.png'],
+                            ['water fountain.png', 'water_fountain.png'],
+                            ['bike rack.png', 'bike_rack.png']
+                        ];
+
+                        spaceToUnderscore.forEach(([oldName, newName]) => {
+                            if (icon.iconSrc && icon.iconSrc.includes(oldName)) {
+                                console.log('🔧 Fixing filename:', icon.iconSrc, '→', icon.iconSrc.replace(oldName, newName));
+                                icon.iconSrc = icon.iconSrc.replace(oldName, newName);
+                                fixed = true;
+                            }
+                        });
+
+                        // Fix Infinity% positions (set to center as default)
+                        if (icon.left === 'Infinity%' || icon.top === 'Infinity%' ||
+                            icon.left.includes('Infinity') || icon.top.includes('Infinity')) {
+                            console.log('🔧 Fixing invalid position for icon:', icon.iconSrc);
+                            console.log('   Old position:', icon.left, icon.top);
+                            icon.left = '50%';
+                            icon.top = '50%';
+                            console.log('   New position:', icon.left, icon.top);
+                            fixed = true;
+                        }
+                    });
+                }
+            });
+        }
+    });
+
+    if (fixed) {
+        localStorage.setItem('communityProposals', JSON.stringify(proposals));
+        console.log('✅ Fixed icon paths and positions in proposals. Reloading...');
+        loadProposals();
+    } else {
+        console.log('ℹ️ No icon paths or positions needed fixing.');
+    }
+}
+
+// Load fully funded proposals into sidebar
+function loadFullyFundedProposals() {
+    const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
+    const fullyFundedSection = document.getElementById('fully-funded-section');
+    const fullyFundedList = document.getElementById('fully-funded-list');
+
+    if (!fullyFundedSection || !fullyFundedList) return;
+
+    // Filter proposals that have reached 100% funding
+    const fullyFunded = proposals.filter(p => p.funding.raised >= p.budget);
+
+    if (fullyFunded.length === 0) {
+        fullyFundedSection.style.display = 'none';
+        return;
+    }
+
+    // Show section and populate with proposals
+    fullyFundedSection.style.display = 'block';
+
+    fullyFundedList.innerHTML = fullyFunded.map(proposal => `
+        <div style="background: white; border: 2px solid #66BB66; padding: 8px; margin-bottom: 10px; cursor: pointer;"
+             onclick="window.location.hash = 'proposal-${proposal.id}'">
+            <div style="font-weight: bold; color: #003366; margin-bottom: 4px; font-size: 0.8rem;">${proposal.title}</div>
+            <div style="background: #FFE066; color: #CC6600; padding: 3px 6px; font-size: 0.65rem; font-weight: bold; text-align: center; border: 1px solid #CCAA00; margin-bottom: 4px;">
+                DEVELOPER REVIEW
+            </div>
+            <div style="color: #666; font-size: 0.7rem;">Budget: $${proposal.budget.toLocaleString()}</div>
+            <div style="color: #66BB66; font-size: 0.7rem; font-weight: bold;">✓ 100% Funded</div>
+            <div style="color: #666; font-size: 0.65rem; margin-top: 3px;">${proposal.funding.backers} backers</div>
+        </div>
+    `).join('');
+}
+
 // Load and display proposals on landing page
 function loadProposals() {
     const proposals = JSON.parse(localStorage.getItem('communityProposals') || '[]');
     const proposalsList = document.getElementById('proposals-list');
 
     if (!proposalsList) return;
+
+    // Filter out fully funded proposals (they go to sidebar instead)
+    const nonFullyFundedProposals = proposals.filter(p => p.funding.raised < p.budget);
 
     if (proposals.length === 0) {
         proposalsList.innerHTML = `
@@ -1224,11 +1370,23 @@ function loadProposals() {
                 <p style="font-size: 0.9rem;">Be the first to submit a community proposal.</p>
             </div>
         `;
+        loadFullyFundedProposals();
         return;
     }
 
-    // Sort by net votes (Build - Demolish) and show top 3
-    const topProposals = proposals.sort((a, b) => {
+    if (nonFullyFundedProposals.length === 0) {
+        proposalsList.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #666; font-family: Verdana, Arial, sans-serif;">
+                <p style="font-size: 1.1rem; margin-bottom: 10px;">All proposals are fully funded! 🎉</p>
+                <p style="font-size: 0.9rem;">Check the "FULLY FUNDED" section in the sidebar for projects under developer review.</p>
+            </div>
+        `;
+        loadFullyFundedProposals();
+        return;
+    }
+
+    // Sort by net votes (Build - Demolish) and show top 3 (excluding fully funded)
+    const topProposals = nonFullyFundedProposals.sort((a, b) => {
         const aNetVotes = a.votes.build - a.votes.demolish;
         const bNetVotes = b.votes.build - b.votes.demolish;
         return bNetVotes - aNetVotes;
@@ -1238,6 +1396,9 @@ function loadProposals() {
 
     // Add event listeners for voting and funding
     attachProposalEventListeners();
+
+    // Load fully funded proposals in sidebar
+    loadFullyFundedProposals();
 }
 
 // Create image preview for proposal card
@@ -1282,14 +1443,23 @@ function createProposalImagePreview(proposal) {
     const imagePath = `images/astoria_Documentation-${String(imageNum).padStart(3, '0')}.jpg`;
     const annotation = proposal.annotations[firstSlideKey];
 
+    // DEBUG: Log annotation data
+    console.log('📋 Proposal ID:', proposal.id, 'Title:', proposal.title);
+    console.log('   Canvas exists:', !!annotation.canvas);
+    console.log('   Template icons:', annotation.templateIcons);
+    console.log('   Sticky notes:', annotation.stickyNotes);
+
     // Render template icons HTML
     let iconsHTML = '';
     if (annotation.templateIcons && annotation.templateIcons.length > 0) {
+        console.log('   ✅ Rendering', annotation.templateIcons.length, 'template icons');
         iconsHTML = annotation.templateIcons.map(iconData =>
             `<div style="position: absolute; left: ${iconData.left}; top: ${iconData.top}; transform: translate(-50%, -50%); pointer-events: none; z-index: 999;">
                 <img src="${iconData.iconSrc}" style="width: 30px; height: 30px; object-fit: contain; transform: scale(${iconData.scale || 1});">
             </div>`
         ).join('');
+    } else {
+        console.log('   ❌ No template icons to render');
     }
 
     // Render sticky notes HTML
@@ -1346,15 +1516,19 @@ function expandProposalPreview(imagePath, canvasDataUrl, proposalId, annotationD
     }
 
     modal.innerHTML = `
-        <div class="login-box" style="max-width: 95vw; max-height: 95vh; width: 95vw; height: 95vh; padding: 10px; display: flex; flex-direction: column;">
-            <div style="position: relative; flex: 1; overflow: hidden; background: #000;">
-                <img src="${imagePath}"
-                     style="width: 100%; height: 100%; object-fit: contain;"
-                     alt="Proposal full view">
-                ${canvasDataUrl ? `<img src="${canvasDataUrl}"
-                     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;">` : ''}
-                ${iconsHTML}
-                ${notesHTML}
+        <div class="login-box" style="max-width: 95vw; max-height: 95vh; width: 95vw; height: 95vh; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <div style="position: relative; width: 100%; height: calc(100% - 50px); display: flex; align-items: center; justify-content: center; background: #000;">
+                <div style="position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                    <div style="position: relative; max-width: 100%; max-height: 100%; aspect-ratio: 4/3;">
+                        <img src="${imagePath}"
+                             style="width: 100%; height: 100%; object-fit: contain; display: block;"
+                             alt="Proposal full view">
+                        ${canvasDataUrl ? `<img src="${canvasDataUrl}"
+                             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none;">` : ''}
+                        ${iconsHTML}
+                        ${notesHTML}
+                    </div>
+                </div>
             </div>
             <button onclick="this.closest('.login-modal').remove()"
                     style="margin-top: 10px; padding: 10px 20px; background: #D3D3D3; border: 2px outset #999; cursor: pointer; font-family: Verdana, Arial, sans-serif; font-weight: bold;">Close</button>
@@ -1384,12 +1558,14 @@ function expandProposalPreview(imagePath, canvasDataUrl, proposalId, annotationD
 function createProposalCard(proposal) {
     const fundingPercent = Math.min((proposal.funding.raised / proposal.budget) * 100, 100);
     const netVotes = proposal.votes.build - proposal.votes.demolish;
+    const isFullyFunded = proposal.funding.raised >= proposal.budget;
 
     return `
         <div class="proposal-card" data-proposal-id="${proposal.id}">
             <div class="proposal-header">
                 <div>
                     <h3 class="proposal-title">${proposal.title}</h3>
+                    ${isFullyFunded ? '<div style="display: inline-block; background: #FFE066; color: #CC6600; padding: 4px 10px; font-size: 0.7rem; font-weight: bold; border: 2px solid #CCAA00; margin: 5px 0;">📋 DEVELOPER REVIEW</div>' : ''}
                     <div class="proposal-meta">Submitted ${proposal.date} • ${Object.keys(proposal.annotations).length} annotated slides</div>
                 </div>
                 <div class="proposal-budget">
@@ -1447,6 +1623,27 @@ function attachProposalEventListeners() {
     // Contribute buttons
     document.querySelectorAll('.contribute-btn').forEach(btn => {
         btn.addEventListener('click', handleContribution);
+    });
+
+    // Image preview click to expand
+    document.querySelectorAll('.proposal-preview-image').forEach(preview => {
+        preview.addEventListener('click', (e) => {
+            const imagePath = e.currentTarget.getAttribute('data-image-path');
+            const canvasUrl = e.currentTarget.getAttribute('data-canvas-url');
+            const proposalId = e.currentTarget.getAttribute('data-proposal-id');
+            const annotationJSON = e.currentTarget.getAttribute('data-annotation');
+
+            let annotationData = null;
+            if (annotationJSON) {
+                try {
+                    annotationData = JSON.parse(annotationJSON);
+                } catch (err) {
+                    console.error('Failed to parse annotation data:', err);
+                }
+            }
+
+            expandProposalPreview(imagePath, canvasUrl, proposalId, annotationData);
+        });
     });
 }
 
@@ -1611,7 +1808,7 @@ function goBackToMenu() {
     document.querySelector('main').classList.remove('page-hidden');
     document.querySelector('main').style.display = 'block';
     document.querySelector('header').classList.remove('page-hidden');
-    document.querySelector('header').style.display = 'block';
+    document.querySelector('header').style.display = 'flex';
 
     // Hide back button
     hideBackToMenuButton();
@@ -2244,7 +2441,7 @@ function closeBrowseProposalsPage() {
     main.style.display = 'block';
     main.classList.remove('page-hidden');
     main.classList.remove('hidden');
-    header.style.display = 'block';
+    header.style.display = 'flex';
     header.classList.remove('page-hidden');
     header.classList.remove('hidden');
 

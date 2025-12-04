@@ -15,7 +15,6 @@
             padding: 20px 40px;
             background: #5B7C99;
             display: flex;
-            justify-content: space-between;
             align-items: center;
             z-index: 1000;
             border-bottom: 3px solid #2E3A46;
@@ -44,6 +43,11 @@
             padding: 8px 20px;
             cursor: pointer;
             transition: none;
+            flex-shrink: 0;
+        }
+
+        #member-button {
+            margin-left: auto;
         }
 
         .header-button:hover {
@@ -332,16 +336,18 @@
         #slideshow-container {
             width: 100%;
             height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             overflow: hidden;
+            position: relative;
         }
 
         #slideshow-images {
             display: flex;
             transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             height: 100vh;
+            width: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
 
         #slideshow-images img {
@@ -350,6 +356,9 @@
             object-fit: cover;
             object-position: center;
             flex-shrink: 0;
+            display: block;
+            margin: 0;
+            padding: 0;
         }
 
         #slideshow-nav {
@@ -1055,9 +1064,9 @@
             padding: 10px 20px;
             font-size: 16px;
             cursor: pointer;
-            background: #D3D3D3;
+            background: #FFFF00;
             color: #000;
-            border: 2px outset #999;
+            border: 2px outset #CCCC00;
             font-weight: bold;
             font-family: Verdana, Arial, sans-serif;
             transition: none;
@@ -1065,11 +1074,11 @@
         }
 
         .back-to-menu-btn:hover {
-            background: #E8E8E8;
+            background: #FFFF66;
         }
 
         .back-to-menu-btn:active {
-            border: 2px inset #999;
+            border: 2px inset #CCCC00;
         }
 
         .back-to-menu-btn.active {
@@ -1894,6 +1903,16 @@
             border: 3px solid #999;
             padding: 15px;
             font-family: Verdana, Arial, sans-serif;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
+            word-wrap: break-word;
+        }
+
+        .proposal-card img {
+            max-width: 100%;
+            height: auto;
+            display: block;
         }
 
         .proposal-header {
@@ -2376,18 +2395,18 @@
             <div style="font-family: Verdana, Arial, sans-serif; font-weight: bold; font-size: 0.85rem; color: #003366; margin-bottom: 10px; text-align: center;">Quick Add Items</div>
             <div style="font-size: 0.7rem; color: #666; margin-bottom: 10px; text-align: center; font-family: Verdana, Arial, sans-serif;">Drag & drop onto image</div>
             <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%;">
-                <div class="template-icon" draggable="true" data-template="bench" data-icon-src="archive/bench.png" title="Park Bench" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/bench.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
-                <div class="template-icon" draggable="true" data-template="swing" data-icon-src="archive/swing set.png" title="Swing Set" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/swing set.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
-                <div class="template-icon" draggable="true" data-template="trash" data-icon-src="archive/trash bin.png" title="Trash Can" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/trash bin.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
-                <div class="template-icon" draggable="true" data-template="slide" data-icon-src="archive/playground.png" title="Playground Slide" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/playground.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
-                <div class="template-icon" draggable="true" data-template="shelter" data-icon-src="archive/bus stop.png" title="Bus Shelter" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/bus stop.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
-                <div class="template-icon" draggable="true" data-template="recycle" data-icon-src="archive/recycling bin.png" title="Recycling Bin" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/recycling bin.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
-                <div class="template-icon" draggable="true" data-template="compost" data-icon-src="archive/composting bin.png" title="Composting Bin" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/composting bin.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
-                <div class="template-icon" draggable="true" data-template="garden" data-icon-src="archive/community garden.png" title="Community Garden" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/community garden.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
-                <div class="template-icon" draggable="true" data-template="light" data-icon-src="archive/street light.png" title="Street Light" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/street light.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
-                <div class="template-icon" draggable="true" data-template="fountain" data-icon-src="archive/water fountain.png" title="Water Fountain" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/water fountain.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
-                <div class="template-icon" draggable="true" data-template="bike" data-icon-src="archive/bike rack.png" title="Bike Rack" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/bike rack.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
-                <div class="template-icon" draggable="true" data-template="tree" data-icon-src="archive/tree.png" title="Tree Planting" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="archive/tree.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="bench" data-icon-src="Archive/bench.png" title="Park Bench" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="Archive/bench.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="swing" data-icon-src="Archive/swing_set.png" title="Swing Set" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="Archive/swing_set.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="trash" data-icon-src="Archive/trash_bin.png" title="Trash Can" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="Archive/trash_bin.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="slide" data-icon-src="Archive/playground.png" title="Playground Slide" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="Archive/playground.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="shelter" data-icon-src="Archive/bus_stop.png" title="Bus Shelter" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="Archive/bus_stop.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="recycle" data-icon-src="Archive/recycling_bin.png" title="Recycling Bin" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="Archive/recycling_bin.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="compost" data-icon-src="Archive/composting_bin.png" title="Composting Bin" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="Archive/composting_bin.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="garden" data-icon-src="Archive/community_garden.png" title="Community Garden" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="Archive/community_garden.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="light" data-icon-src="Archive/street_light.png" title="Street Light" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="Archive/street_light.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="fountain" data-icon-src="Archive/water_fountain.png" title="Water Fountain" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="Archive/water_fountain.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="bike" data-icon-src="Archive/bike_rack.png" title="Bike Rack" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="Archive/bike_rack.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
+                <div class="template-icon" draggable="true" data-template="tree" data-icon-src="Archive/tree.png" title="Tree Planting" style="cursor: grab; text-align: center; padding: 5px; background: #f0f0f0; border: 2px solid #999; border-style: outset;"><img src="Archive/tree.png" style="width: 50px; height: 50px; object-fit: contain; pointer-events: none;"></div>
             </div>
         </div>
 
@@ -2460,12 +2479,12 @@
 
     <!-- Proposal Details Modal (shows proposals for selected zone) -->
     <div class="login-modal" id="zone-proposals-modal">
-        <div class="login-box" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+        <div class="login-box" style="max-width: 90vw; width: 800px; max-height: 90vh; overflow-y: auto; margin: 20px;">
             <div class="login-header">
                 <h2 id="zone-modal-title">Proposals in This Zone</h2>
                 <p id="zone-modal-subtitle" style="font-size: 0.9rem; color: #666;"></p>
             </div>
-            <div id="zone-proposals-list" style="padding: 0 20px 20px 20px; display: flex; flex-direction: column; gap: 20px;">
+            <div id="zone-proposals-list" style="padding: 0 20px 20px 20px; display: flex; flex-direction: column; gap: 20px; max-width: 100%; box-sizing: border-box; overflow-x: hidden;">
                 <!-- Zone proposals will be loaded here -->
             </div>
             <div class="login-buttons" style="margin: 0 20px 20px 20px;">
@@ -2998,6 +3017,13 @@
                     </ul>
                 </div>
 
+                <div class="nav-section" id="fully-funded-section" style="display: none;">
+                    <h3 style="background: #66BB66; color: white; padding: 8px; margin: -15px -15px 10px -15px; text-align: center; font-size: 0.9rem; border: 2px solid #449944;">FULLY FUNDED</h3>
+                    <div id="fully-funded-list" style="font-size: 0.75rem;">
+                        <!-- Fully funded proposals will be loaded here -->
+                    </div>
+                </div>
+
                 <div class="visitor-counter">
                     <p>Visitors: <span class="counter-number">002847</span></p>
                     <p style="font-size: 0.7rem; color: #666; margin-top: 5px;">Since Jan 2025</p>
@@ -3017,7 +3043,7 @@
                     <h1>Community-Driven Planning Tool</h1>
                     <p><strong>Submit Ideas</strong> • Annotate Plans • Vote & Fund Projects</p>
                     <div style="margin: 15px 0; padding: 15px; background: #FFFFCC; border: 2px solid #FFAA00;">
-                        <p style="font-size: 0.9rem; margin: 0 0 10px 0; font-weight: bold; color: #CC6600;">🎯 HOW IT WORKS:</p>
+                        <p style="font-size: 0.9rem; margin: 0 0 10px 0; font-weight: bold; color: #CC6600;">HOW IT WORKS:</p>
                         <p style="font-size: 0.85rem; margin: 0 0 5px 0;">1. <strong>Create Proposal:</strong> View site plans, draw ideas, add notes & budget</p>
                         <p style="font-size: 0.85rem; margin: 0 0 5px 0;">2. <strong>Community Votes:</strong> Vote "Build" or "Demolish" on proposals</p>
                         <p style="font-size: 0.85rem; margin: 0;">3. <strong>Fund Together:</strong> Contribute to make your favorite projects happen!</p>
@@ -3027,19 +3053,19 @@
 
                 <div class="action-boxes">
                     <div class="action-box">
-                        <h3>🏗️ Create a Proposal</h3>
+                        <h3>Create a Proposal</h3>
                         <p>View site plans, draw your ideas, set budget</p>
                         <button class="action-button" id="btn-create-proposal">Start Planning</button>
                     </div>
                     <div class="action-box">
-                        <h3>📊 Browse Proposals</h3>
+                        <h3>Browse Proposals</h3>
                         <p>Vote and contribute to community projects</p>
                         <button class="action-button" id="btn-browse-proposals">View All</button>
                     </div>
                 </div>
 
                 <div class="recent-submissions">
-                    <h2>⭐ Top Proposals</h2>
+                    <h2>Top Proposals</h2>
                     <p style="font-size: 0.85rem; color: #666; margin-bottom: 12px;">Highest voted community projects • Sign in to vote & contribute!</p>
                     <div class="proposals-list" id="proposals-list">
                         <!-- Proposals will be dynamically loaded here -->
@@ -3197,7 +3223,9 @@
                 menuCommunity.addEventListener('click', function() {
                     // Hide menu boxes and header
                     document.querySelector('main').classList.add('hidden');
+                    document.querySelector('main').style.display = 'none';
                     document.querySelector('header').classList.add('hidden');
+                    document.querySelector('header').style.display = 'none';
 
                     // Start directly at slideshow3 (images 20, 21, 21.5)
                     document.getElementById('slideshow3').style.display = 'block';
@@ -3206,7 +3234,7 @@
                     document.getElementById('slideshow3').classList.add('active');
                     document.getElementById('overlay').classList.add('active');
 
-                    // Show clickable points after slideshow3 completes and overlay starts blinking (2s animation + small delay)
+                    // Show clickable points after slideshow3 completes and overlay starts blinking (3s animation + small delay)
                     setTimeout(() => {
                         document.querySelectorAll('.clickable-point').forEach(point => {
                             point.style.display = 'block';
@@ -3218,7 +3246,7 @@
                         if (typeof showBackToMenuButton === 'function') {
                             showBackToMenuButton();
                         }
-                    }, 2500);
+                    }, 3500);
                 });
             }
         });
